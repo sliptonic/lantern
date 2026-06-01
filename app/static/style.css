@@ -48,3 +48,5 @@ section { margin-bottom: 2rem; }
 .help { background:#fff; border:1px solid var(--line); border-radius:.4rem; padding:1rem; font-size:.85rem; }
 .help dt { margin-top:.5rem; } .help dd { margin:0 0 .2rem; }
 .template-pick table.sheets td { vertical-align:middle; }
+.inline-radio { display:inline-flex; align-items:center; gap:.35rem; font-weight:normal; margin:0; }
+.inline-radio input { width:auto; }

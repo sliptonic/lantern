@@ -124,6 +124,29 @@ def test_templates_list_switch_and_custom(client):
     assert sheet_templates.get_active() == "default"
 
 
+def test_page_size_switch(client):
+    from app import pagesize
+    from app.routes.sheets import _build_html
+
+    client.post("/sheet/save", data={"machine": "Bandsaw", "author": "a", "body": "cut"})
+
+    # Default is US Letter.
+    assert pagesize.get() == "letter"
+    letter_html = _build_html("bandsaw")
+    assert "size: Letter" in letter_html and "8.5in" in letter_html
+
+    # Switch to A4 via Settings -> templates lay out at A4 geometry.
+    r = client.post("/settings/page-size", data={"page_size": "a4"})
+    assert r.status_code in (200, 303)
+    assert pagesize.get() == "a4"
+    a4_html = _build_html("bandsaw")
+    assert "size: A4" in a4_html and "210mm" in a4_html
+
+    # Unknown values fall back to letter.
+    pagesize.set("tabloid")
+    assert pagesize.get() == "letter"
+
+
 def test_seed_creates_samples(tmp_path, monkeypatch):
     monkeypatch.setenv("DATA_DIR", str(tmp_path))
     monkeypatch.setenv("BASE_URL", "http://test.local")

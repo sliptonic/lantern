@@ -43,6 +43,7 @@ CONTEXT_VARS = [
     ("brand_mark", "Lantern brand mark as a data URI"),
     ("log_qr / edit_qr", "QR code data URIs"),
     ("repo_url / repo_url_display", "Project repo link"),
+    ("page.css_size / page.width / page.height", "Page size (Letter/A4) + dimensions"),
 ]
 
 

@@ -30,8 +30,8 @@ class RenderResult:
         return self.pages > 1
 
 
-def render_pdf(html: str) -> RenderResult:
-    """Render templated HTML to a US Letter PDF via headless Chromium.
+def render_pdf(html: str, page_format: str = "Letter") -> RenderResult:
+    """Render templated HTML to a PDF (Letter or A4) via headless Chromium.
 
     Uses the sync Playwright API; call from a worker thread under FastAPI
     (e.g. via `starlette.concurrency.run_in_threadpool`) to avoid blocking the
@@ -45,7 +45,7 @@ def render_pdf(html: str) -> RenderResult:
             page = browser.new_page()
             page.set_content(html, wait_until="networkidle")
             pdf_bytes = page.pdf(
-                format="Letter",
+                format=page_format,
                 print_background=True,
                 margin={"top": "0", "right": "0", "bottom": "0", "left": "0"},
             )

@@ -50,6 +50,21 @@
 </section>
 
 <section>
+  <h2>Page Size</h2>
+  <p class="muted">The paper size every sheet is rendered and printed at.</p>
+  <form method="post" action="/settings/page-size" class="save-row">
+    {% for p in page_sizes %}
+    <label class="inline-radio">
+      <input type="radio" name="page_size" value="{{ p.key }}" {{ "checked" if p.active }}>
+      {{ p.label }}
+    </label>
+    {% endfor %}
+    {% if pin_enabled %}<label>Space PIN <input name="pin" type="password"></label>{% endif %}
+    <button type="submit">Set page size</button>
+  </form>
+</section>
+
+<section>
   <h2>Configuration</h2>
   <p>Base URL (for QR codes): <code>{{ base_url }}</code></p>
   <p>PIN gate: <strong>{{ "enabled" if pin_enabled else "disabled" }}</strong></p>

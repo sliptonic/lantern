@@ -5,7 +5,7 @@ from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from starlette.concurrency import run_in_threadpool
 
-from .. import branding, content, pdf, qr, sheet_templates, state
+from .. import branding, content, pagesize, pdf, qr, sheet_templates, state
 from ..config import get_settings
 from ..models import Contact, Sheet
 from ..security import require_pin
@@ -143,10 +143,11 @@ def _build_html(slug: str, template: str | None = None) -> str:
         "brand_mark": branding.brand_mark_data_uri(),
         "repo_url": repo_url,
         "repo_url_display": repo_url.split("://", 1)[-1],
+        "page": pagesize.resolve(),
     }
     return sheet_templates.render(template or sheet_templates.get_active(), ctx)
 
 
 def _render(slug: str, template: str | None = None) -> pdf.RenderResult:
-    """Build the Template HTML for a Sheet and render it to a Letter PDF."""
-    return pdf.render_pdf(_build_html(slug, template))
+    """Build the Template HTML for a Sheet and render it to a PDF."""
+    return pdf.render_pdf(_build_html(slug, template), page_format=pagesize.resolve()["format"])

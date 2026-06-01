@@ -6,13 +6,13 @@
 <head>
 <meta charset="utf-8">
 <style>
-  @page { size: Letter; margin: 0; }
+  @page { size: {{ page.css_size }}; margin: 0; }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body {
     font-family: Georgia, "Times New Roman", serif;
     color: #111;
-    width: 8.5in; height: 11in;
+    width: {{ page.width }}; height: {{ page.height }};
     padding: 0.5in;
     display: flex; flex-direction: column;
   }
