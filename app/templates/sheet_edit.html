@@ -20,7 +20,28 @@
       <label>Training required
         <textarea name="training_required" rows="2">{{ sheet.training_required }}</textarea>
       </label>
-      {# TODO(roadmap #2): repeatable Software Links / Manual Links inputs. #}
+
+      {% set link_groups = [
+        ("sw", "Software links", sheet.software_links),
+        ("man", "Manual links", sheet.manual_links)] %}
+      {% for prefix, legend, links in link_groups %}
+      <fieldset class="links">
+        <legend>{{ legend }}</legend>
+        <div class="link-rows">
+          {% for l in links %}
+          <div class="link-row">
+            <input name="{{ prefix }}_label" placeholder="label" value="{{ l.label }}">
+            <input name="{{ prefix }}_url" placeholder="https://…" value="{{ l.url }}">
+          </div>
+          {% endfor %}
+          <div class="link-row">
+            <input name="{{ prefix }}_label" placeholder="label">
+            <input name="{{ prefix }}_url" placeholder="https://…">
+          </div>
+        </div>
+        <button type="button" class="add-row">+ add link</button>
+      </fieldset>
+      {% endfor %}
 
       <label>Procedure / checklist (Markdown)
         <textarea name="body" rows="16" id="body">{{ sheet.body }}</textarea>
@@ -44,4 +65,17 @@
     <a href="/sheet/{{ slug }}/history">History</a>{% endif %}
   </div>
 </form>
+
+<script>
+  // "+ add link" clones the last row in its group and clears it.
+  document.querySelectorAll(".add-row").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var rows = btn.previousElementSibling;          // .link-rows
+      var last = rows.lastElementChild;
+      var copy = last.cloneNode(true);
+      copy.querySelectorAll("input").forEach(function (i) { i.value = ""; });
+      rows.appendChild(copy);
+    });
+  });
+</script>
 {% endblock %}

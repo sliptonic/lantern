@@ -7,11 +7,21 @@ from starlette.concurrency import run_in_threadpool
 
 from .. import branding, content, pagesize, pdf, qr, sheet_templates, state
 from ..config import get_settings
-from ..models import Contact, Sheet
+from ..models import Contact, Link, Sheet
 from ..security import require_pin
 from ..templating import base_context, render
 
 router = APIRouter()
+
+
+def _links(labels: list[str], urls: list[str]) -> list[Link]:
+    """Pair up parallel label/url form fields into Links, dropping blank rows."""
+    out = []
+    for label, url in zip(labels, urls):
+        label, url = label.strip(), url.strip()
+        if url:
+            out.append(Link(label=label or url, url=url))
+    return out
 
 
 def _gather(slug: str) -> dict:
@@ -64,6 +74,10 @@ async def save_sheet(
     contact_info: str = Form(""),
     training_required: str = Form(""),
     body: str = Form(""),
+    sw_label: list[str] = Form(default=[]),
+    sw_url: list[str] = Form(default=[]),
+    man_label: list[str] = Form(default=[]),
+    man_url: list[str] = Form(default=[]),
 ):
     require_pin(pin)
     slug = slug.strip() or content.slugify(machine)
@@ -71,6 +85,8 @@ async def save_sheet(
         slug=slug,
         machine=machine.strip(),
         contact=Contact(name=contact_name.strip(), info=contact_info.strip()),
+        software_links=_links(sw_label, sw_url),
+        manual_links=_links(man_label, man_url),
         training_required=training_required.strip(),
         body=body,
     )

@@ -33,6 +33,13 @@
     text-transform: uppercase; letter-spacing: .04em; color: #666; font-size: 6.5pt;
   }
 
+  /* --- Resources: software + manual links (only if present) --- */
+  .resources { font-size: 8.5pt; padding: 0.07in 0; border-bottom: 1px solid #ddd; }
+  .resources .label { text-transform: uppercase; letter-spacing: .04em; color: #666;
+    font-size: 6.5pt; margin: 0 .3em 0 .6in; }
+  .resources .label:first-child { margin-left: 0; }
+  .resources a { color: #111; text-decoration: none; }
+
   /* --- Body: the freeform procedure, given maximum room --- */
   .body { flex: 1; font-size: 11pt; line-height: 1.38; overflow: hidden; padding-top: 0.14in; }
   .body h1 { font-size: 16pt; margin: .2em 0 .3em; }
@@ -70,6 +77,17 @@
       {% endif %}
     </div>
   </header>
+
+  {% if sheet.software_links or sheet.manual_links %}
+  <div class="resources">
+    {% if sheet.software_links %}<span class="label">Software</span>
+      {% for l in sheet.software_links %}<a href="{{ l.url }}">{{ l.label }}</a>{% if not loop.last %} · {% endif %}{% endfor %}
+    {% endif %}
+    {% if sheet.manual_links %}<span class="label">Manuals</span>
+      {% for l in sheet.manual_links %}<a href="{{ l.url }}">{{ l.label }}</a>{% if not loop.last %} · {% endif %}{% endfor %}
+    {% endif %}
+  </div>
+  {% endif %}
 
   <div class="body">
     {{ body_html | safe }}

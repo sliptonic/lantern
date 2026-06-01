@@ -27,6 +27,7 @@
     border-bottom: 1px solid #bbb; padding-bottom: 0.1in;
   }
   .meta .label { text-transform: uppercase; letter-spacing: .05em; color: #666; font-size: 7.5pt; }
+  .meta a { color: #111; text-decoration: none; }
   .body { flex: 1; font-size: 11.5pt; line-height: 1.4; overflow: hidden; padding-top: 0.1in; }
   .body h2 { font-size: 14pt; border-bottom: 1px solid #ccc; }
   footer.sheet-foot {
@@ -52,6 +53,14 @@
     {% endif %}
     {% if sheet.training_required %}
     <div><div class="label">Training required</div>{{ sheet.training_required }}</div>
+    {% endif %}
+    {% if sheet.software_links %}
+    <div><div class="label">Software</div>
+      {% for l in sheet.software_links %}<a href="{{ l.url }}">{{ l.label }}</a>{% if not loop.last %} · {% endif %}{% endfor %}</div>
+    {% endif %}
+    {% if sheet.manual_links %}
+    <div><div class="label">Manuals</div>
+      {% for l in sheet.manual_links %}<a href="{{ l.url }}">{{ l.label }}</a>{% if not loop.last %} · {% endif %}{% endfor %}</div>
     {% endif %}
   </div>
 
