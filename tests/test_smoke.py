@@ -167,6 +167,27 @@ def test_page_size_switch(client):
     assert pagesize.get() == "letter"
 
 
+def test_archive_hides_from_dashboard_and_queue(client):
+    from app import state
+
+    client.post("/sheet/save", data={"machine": "Welder", "author": "a", "body": "weld"})
+    assert "Welder" in client.get("/").text
+    assert "welder" in client.get("/queue").text
+
+    # Archive -> gone from the print queue, content/history preserved.
+    r = client.post("/sheet/welder/archive", data={}, follow_redirects=False)
+    assert r.status_code == 303
+    assert state.is_archived("welder")
+    assert "welder" not in client.get("/queue").text
+    assert "Archived machines" in client.get("/").text
+    assert client.get("/sheet/welder/history").status_code == 200
+
+    # Unarchive -> back in the queue.
+    client.post("/sheet/welder/unarchive", data={}, follow_redirects=False)
+    assert not state.is_archived("welder")
+    assert "welder" in client.get("/queue").text
+
+
 def test_usage_log_view_and_csv(client):
     client.post("/sheet/save", data={"machine": "Sander", "author": "a", "body": "sand"})
     client.post("/sheet/sander/log", data={"name": "Pat", "activity": "Sanded oak", "notes": "grit 120"})

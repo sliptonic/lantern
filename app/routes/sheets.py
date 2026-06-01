@@ -41,9 +41,11 @@ def _gather(slug: str) -> dict:
 
 @router.get("/", response_class=HTMLResponse)
 def dashboard(request: Request):
-    rows = [_gather(s) for s in content.list_slugs()]
+    archived = state.archived_slugs()
+    active = [s for s in content.list_slugs() if s not in archived]
     ctx = base_context(request) | {
-        "sheets": rows,
+        "sheets": [_gather(s) for s in active],
+        "archived": [_gather(s) for s in sorted(archived) if content.exists(s)],
         "queue": state.print_queue(),
         "activity": state.recent_log(15),
     }
@@ -109,6 +111,24 @@ def history(request: Request, slug: str):
         raise HTTPException(404)
     ctx = base_context(request) | {"slug": slug, "revisions": content.history(slug)}
     return render("history.html", ctx)
+
+
+@router.post("/sheet/{slug}/archive")
+def archive(slug: str, pin: str = Form("")):
+    """Retire a machine: hide it from the dashboard and queue. Content/history
+    are preserved; logging still works. Reversible via unarchive."""
+    require_pin(pin)
+    if not content.exists(slug):
+        raise HTTPException(404)
+    state.archive(slug)
+    return RedirectResponse("/", status_code=303)
+
+
+@router.post("/sheet/{slug}/unarchive")
+def unarchive(slug: str, pin: str = Form("")):
+    require_pin(pin)
+    state.unarchive(slug)
+    return RedirectResponse("/", status_code=303)
 
 
 @router.post("/sheet/{slug}/revert")

@@ -90,10 +90,37 @@ def all_state() -> dict[str, dict]:
 
 
 def print_queue() -> list[str]:
-    """Slugs that are Dirty and not Overflowing — i.e. need printing."""
+    """Slugs that are Dirty, not Overflowing, and not Archived — i.e. need printing."""
     with connect() as conn:
         rows = conn.execute(
             "SELECT slug FROM sheet_state WHERE dirty = 1 AND overflowing = 0 "
+            "AND slug NOT IN (SELECT slug FROM archived_sheets) "
             "ORDER BY updated_at DESC"
         ).fetchall()
     return [r["slug"] for r in rows]
+
+
+# --- Archive (retire) ------------------------------------------------------
+
+def archive(slug: str) -> None:
+    with connect() as conn:
+        conn.execute("INSERT OR IGNORE INTO archived_sheets (slug) VALUES (?)", (slug,))
+
+
+def unarchive(slug: str) -> None:
+    with connect() as conn:
+        conn.execute("DELETE FROM archived_sheets WHERE slug = ?", (slug,))
+
+
+def is_archived(slug: str) -> bool:
+    with connect() as conn:
+        row = conn.execute(
+            "SELECT 1 FROM archived_sheets WHERE slug = ?", (slug,)
+        ).fetchone()
+    return row is not None
+
+
+def archived_slugs() -> set[str]:
+    with connect() as conn:
+        rows = conn.execute("SELECT slug FROM archived_sheets").fetchall()
+    return {r["slug"] for r in rows}
