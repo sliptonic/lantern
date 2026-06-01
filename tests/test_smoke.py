@@ -147,6 +147,27 @@ def test_page_size_switch(client):
     assert pagesize.get() == "letter"
 
 
+def test_default_pin_warning(tmp_path, monkeypatch):
+    monkeypatch.setenv("DATA_DIR", str(tmp_path))
+    monkeypatch.setenv("BASE_URL", "http://test.local")
+    monkeypatch.setenv("SEED_SAMPLES", "0")
+    monkeypatch.setenv("PIN_ENABLED", "1")
+    monkeypatch.delenv("EDIT_PIN", raising=False)  # falls back to the default
+    from app.config import get_settings
+    get_settings.cache_clear()
+    from app.security import pin_is_default
+
+    assert pin_is_default() is True
+    from app.main import app
+    with TestClient(app) as c:
+        assert "still the default" in c.get("/").text  # banner on every page
+
+    # Setting a real PIN clears the warning.
+    monkeypatch.setenv("EDIT_PIN", "s3cret")
+    get_settings.cache_clear()
+    assert pin_is_default() is False
+
+
 def test_seed_creates_samples(tmp_path, monkeypatch):
     monkeypatch.setenv("DATA_DIR", str(tmp_path))
     monkeypatch.setenv("BASE_URL", "http://test.local")

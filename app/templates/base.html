@@ -18,6 +18,10 @@
       <a href="/settings">Settings</a>
     </nav>
   </header>
+  {% if insecure_pin %}
+  <div class="warn-bar">⚠️ The Space PIN is still the default <code>changeme</code>.
+    Set <code>EDIT_PIN</code> to a real value before going live.</div>
+  {% endif %}
   <main>
     {% block content %}{% endblock %}
   </main>

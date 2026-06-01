@@ -9,6 +9,14 @@ from fastapi import HTTPException
 
 from .config import get_settings
 
+DEFAULT_PIN = "changeme"
+
+
+def pin_is_default() -> bool:
+    """True when the gate is on but the PIN is still the shipped placeholder."""
+    settings = get_settings()
+    return settings.pin_enabled and settings.edit_pin == DEFAULT_PIN
+
 
 def pin_ok(submitted: str | None) -> bool:
     settings = get_settings()
