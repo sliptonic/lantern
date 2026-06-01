@@ -9,7 +9,8 @@ h1 { font-size: 1.6rem; } h2 { font-size: 1.2rem; }
 
 .topbar { display:flex; align-items:center; justify-content:space-between;
           background:#fff; border-bottom:1px solid var(--line); padding:.75rem 1.25rem; }
-.topbar .brand { font-weight:700; font-size:1.1rem; }
+.topbar .brand { font-weight:700; font-size:1.1rem; display:inline-flex; align-items:center; gap:.45rem; }
+.topbar .brand-logo { height:1.6rem; width:auto; display:block; }
 .topbar nav a { margin-left:1rem; }
 
 .muted { color: var(--muted); font-size:.9em; }
@@ -40,3 +41,10 @@ button:hover { filter:brightness(1.08); }
 .preview-pane .letter-box { aspect-ratio: 8.5 / 11; border:1px dashed #aaa; background:#fff;
                             padding:1rem; display:flex; align-items:center; justify-content:center; text-align:center; }
 .log { max-width: 32rem; }
+
+section { margin-bottom: 2rem; }
+.template-editor .grid { display:grid; grid-template-columns: 2fr 1fr; gap:1.5rem; align-items:start; }
+.template-editor textarea { width:100%; }
+.help { background:#fff; border:1px solid var(--line); border-radius:.4rem; padding:1rem; font-size:.85rem; }
+.help dt { margin-top:.5rem; } .help dd { margin:0 0 .2rem; }
+.template-pick table.sheets td { vertical-align:middle; }

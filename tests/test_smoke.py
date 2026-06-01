@@ -13,6 +13,7 @@ def client(tmp_path, monkeypatch):
     monkeypatch.setenv("DATA_DIR", str(tmp_path))
     monkeypatch.setenv("PIN_ENABLED", "0")
     monkeypatch.setenv("BASE_URL", "http://test.local")
+    monkeypatch.setenv("SEED_SAMPLES", "0")  # keep the test store empty/deterministic
     # Import after env is set so settings cache picks up the temp dir.
     from app.config import get_settings
     get_settings.cache_clear()
@@ -58,3 +59,82 @@ def test_history_records_revisions(client):
     assert r.status_code == 200
     # Two saves -> two revisions.
     assert r.text.count("Revert to this") >= 1
+
+
+# Minimal valid 1x1 PNG.
+_PNG_1x1 = bytes.fromhex(
+    "89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4"
+    "890000000a49444154789c6360000002000154a24f5f0000000049454e44ae426082"
+)
+
+
+def test_logo_embedded_in_sheet_when_present(client):
+    from app import branding
+    from app.config import get_settings
+    from app.routes.sheets import _build_html
+
+    client.post("/sheet/save", data={"machine": "Laser Cutter", "author": "a", "body": "x"})
+
+    # No uploaded logo yet (template-agnostic: assert on the data itself).
+    assert branding.logo_data_uri() is None
+
+    # Upload a logo via Settings -> available as a base64 data URI.
+    r = client.post("/settings/logo", files={"logo": ("logo.png", _PNG_1x1, "image/png")})
+    assert r.status_code in (200, 303)
+    assert get_settings().logo_path.exists()
+
+    uri = branding.logo_data_uri()
+    assert uri is not None and uri.startswith("data:image/png;base64,")
+    # The active template embeds the uploaded logo (distinct from the brand mark).
+    assert uri in _build_html("laser-cutter")
+
+
+def test_templates_list_switch_and_custom(client):
+    from app import sheet_templates
+    from app.routes.sheets import _build_html
+
+    client.post("/sheet/save", data={"machine": "Drill Press", "author": "a",
+                                      "body": "## Use\n- Be careful"})
+
+    # Both built-ins are available; default is active.
+    assert {"default", "classic"} <= set(sheet_templates.all_names())
+    assert sheet_templates.get_active() == "default"
+
+    # Default render carries the branded footer (brand mark + repo link) and QRs.
+    html = _build_html("drill-press", "default")
+    assert "github.com/sliptonic/lantern" in html
+    assert "Scan to LOG USE" in html and "Scan to EDIT" in html
+
+    # Classic is a different, valid layout.
+    assert "Drill Press" in _build_html("drill-press", "classic")
+
+    # Create a custom template -> listed, renders, can be made active.
+    r = client.post("/settings/template/save", data={
+        "name": "mine", "html": "<html><body>CUSTOM {{ sheet.machine }}</body></html>"})
+    assert r.status_code in (200, 303)
+    assert "mine" in sheet_templates.custom_names()
+    assert "CUSTOM Drill Press" in _build_html("drill-press", "mine")
+
+    client.post("/settings/template/active", data={"name": "mine"})
+    assert sheet_templates.get_active() == "mine"
+
+    # Deleting the active custom template falls back to default.
+    client.post("/settings/template/mine/delete", data={})
+    assert "mine" not in sheet_templates.custom_names()
+    assert sheet_templates.get_active() == "default"
+
+
+def test_seed_creates_samples(tmp_path, monkeypatch):
+    monkeypatch.setenv("DATA_DIR", str(tmp_path))
+    monkeypatch.setenv("BASE_URL", "http://test.local")
+    from app.config import get_settings
+    get_settings.cache_clear()
+    from app import content, seed
+    from app.db import init_db
+
+    init_db()
+    assert seed.seed_if_empty() == 2
+    slugs = content.list_slugs()
+    assert "prusa-mk4-3d-printer" in slugs and "epilog-laser-cutter" in slugs
+    # Idempotent: it never re-seeds once content exists.
+    assert seed.seed_if_empty() == 0

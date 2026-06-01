@@ -26,6 +26,10 @@ class Settings:
     edit_pin: str
     # When False, the PIN gate is bypassed entirely (fully open wiki).
     pin_enabled: bool
+    # Project source repo, shown/linked in the printed sheet footer.
+    repo_url: str
+    # Seed sample sheets on first run (when the content store is empty).
+    seed_samples: bool
     host: str
     port: int
 
@@ -38,6 +42,11 @@ class Settings:
     @property
     def sheets_dir(self) -> Path:
         return self.content_dir / "sheets"
+
+    @property
+    def templates_dir(self) -> Path:
+        """User-created sheet Templates (persisted in the data volume)."""
+        return self.data_dir / "templates"
 
     @property
     def db_path(self) -> Path:
@@ -56,6 +65,8 @@ def get_settings() -> Settings:
         data_dir=Path(os.getenv("DATA_DIR", "./data")).resolve(),
         edit_pin=os.getenv("EDIT_PIN", "changeme"),
         pin_enabled=_bool(os.getenv("PIN_ENABLED"), True),
+        repo_url=os.getenv("REPO_URL", "https://github.com/sliptonic/lantern").rstrip("/"),
+        seed_samples=_bool(os.getenv("SEED_SAMPLES"), True),
         host=os.getenv("HOST", "0.0.0.0"),
         port=int(os.getenv("PORT", "8080")),
     )

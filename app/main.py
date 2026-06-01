@@ -11,6 +11,7 @@ from .config import get_settings
 from .content import _repo  # ensures content repo exists on startup
 from .db import init_db
 from .routes import admin, queue, sheets, usage
+from .seed import seed_if_empty
 
 
 @asynccontextmanager
@@ -18,6 +19,9 @@ async def lifespan(app: FastAPI):
     # Create data dir, SQLite schema, and the content git repo if missing.
     init_db()
     _repo()
+    # First-run sample sheets so the app isn't empty on a fresh install.
+    if get_settings().seed_samples:
+        seed_if_empty()
     yield
 
 
