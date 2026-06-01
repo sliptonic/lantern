@@ -30,6 +30,9 @@ class Settings:
     repo_url: str
     # Seed sample sheets on first run (when the content store is empty).
     seed_samples: bool
+    # Default page size for rendered sheets ("letter" or "a4"); overridable
+    # at runtime in Settings.
+    page_size: str
     host: str
     port: int
 
@@ -67,6 +70,7 @@ def get_settings() -> Settings:
         pin_enabled=_bool(os.getenv("PIN_ENABLED"), True),
         repo_url=os.getenv("REPO_URL", "https://github.com/sliptonic/lantern").rstrip("/"),
         seed_samples=_bool(os.getenv("SEED_SAMPLES"), True),
+        page_size=os.getenv("PAGE_SIZE", "letter").strip().lower(),
         host=os.getenv("HOST", "0.0.0.0"),
         port=int(os.getenv("PORT", "8080")),
     )

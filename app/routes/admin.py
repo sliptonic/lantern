@@ -7,7 +7,7 @@ from __future__ import annotations
 from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from .. import content, sheet_templates
+from .. import content, pagesize, sheet_templates
 from ..config import get_settings
 from ..security import require_pin
 from ..templating import base_context, render
@@ -24,8 +24,16 @@ def settings_page(request: Request):
         "templates": sheet_templates.listing(),
         "active_template": sheet_templates.get_active(),
         "sample_slug": slugs[0] if slugs else None,
+        "page_sizes": pagesize.options(),
     }
     return render("settings.html", ctx)
+
+
+@router.post("/settings/page-size")
+def set_page_size(pin: str = Form(""), page_size: str = Form(...)):
+    require_pin(pin)
+    pagesize.set(page_size)
+    return RedirectResponse("/settings", status_code=303)
 
 
 @router.post("/settings/logo")
