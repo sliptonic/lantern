@@ -167,6 +167,22 @@ def test_page_size_switch(client):
     assert pagesize.get() == "letter"
 
 
+def test_batch_print_queue(client):
+    from app import state
+
+    client.post("/sheet/save", data={"machine": "Drill", "author": "a", "body": "drill"})
+    client.post("/sheet/save", data={"machine": "Saw", "author": "a", "body": "saw"})
+    assert set(state.print_queue()) == {"drill", "saw"}
+
+    # Mark all printed clears the whole queue in one action.
+    r = client.post("/queue/printed-all", follow_redirects=False)
+    assert r.status_code == 303
+    assert state.print_queue() == []
+
+    # With an empty queue, the combined PDF is a 404 (nothing to print).
+    assert client.get("/queue/print-all.pdf").status_code == 404
+
+
 def test_archive_hides_from_dashboard_and_queue(client):
     from app import state
 
