@@ -7,8 +7,14 @@ server origin), the Logo is inlined as a base64 data URI rather than linked.
 from __future__ import annotations
 
 import base64
+from functools import lru_cache
+from pathlib import Path
 
 from .config import get_settings
+
+# The Lantern project brand mark (small), shown in the printed sheet footer.
+# Distinct from the makerspace Logo (uploaded via Settings, shown in the header).
+_BRAND_MARK = Path(__file__).parent / "static" / "lantern-mark.png"
 
 
 def _sniff_mime(data: bytes) -> str:
@@ -28,10 +34,18 @@ def _sniff_mime(data: bytes) -> str:
 
 
 def logo_data_uri() -> str | None:
-    """Inline data URI for the uploaded Logo, or None if none is set."""
+    """Inline data URI for the uploaded makerspace Logo, or None if unset."""
     path = get_settings().logo_path
     if not path.exists():
         return None
     data = path.read_bytes()
     encoded = base64.b64encode(data).decode("ascii")
     return f"data:{_sniff_mime(data)};base64,{encoded}"
+
+
+@lru_cache
+def brand_mark_data_uri() -> str:
+    """Inline data URI for the Lantern brand mark used in the sheet footer."""
+    data = _BRAND_MARK.read_bytes()
+    encoded = base64.b64encode(data).decode("ascii")
+    return f"data:image/png;base64,{encoded}"

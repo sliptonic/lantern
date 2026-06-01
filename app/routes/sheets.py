@@ -5,10 +5,11 @@ from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from starlette.concurrency import run_in_threadpool
 
-from .. import branding, content, pdf, qr, state
+from .. import branding, content, pdf, qr, sheet_templates, state
+from ..config import get_settings
 from ..models import Contact, Sheet
 from ..security import require_pin
-from ..templating import base_context, render, templates
+from ..templating import base_context, render
 
 router = APIRouter()
 
@@ -108,10 +109,13 @@ async def revert(slug: str, commit: str = Form(...), author: str = Form("anonymo
 
 
 @router.get("/sheet/{slug}/pdf")
-async def sheet_pdf(slug: str):
+async def sheet_pdf(slug: str, template: str | None = None):
     if not content.exists(slug):
         raise HTTPException(404)
-    result = await run_in_threadpool(_render, slug)
+    # ?template= lets Settings preview a specific template without making it active.
+    if template and not sheet_templates.exists(template):
+        raise HTTPException(404, "Unknown template")
+    result = await run_in_threadpool(_render, slug, template)
     return Response(
         content=result.pdf,
         media_type="application/pdf",
@@ -119,24 +123,30 @@ async def sheet_pdf(slug: str):
     )
 
 
-def _build_html(slug: str) -> str:
-    """Render the uniform Template to HTML for a Sheet (no PDF step).
+def _build_html(slug: str, template: str | None = None) -> str:
+    """Render a Sheet through the active (or given) Template to HTML.
 
-    Separated from PDF rendering so the templated output — including the
-    embedded Logo — is testable without headless Chromium.
+    Separated from PDF rendering so the templated output — logo, footer
+    branding, layout — is testable without headless Chromium.
     """
     sheet = content.load(slug)
     if sheet is None:
         raise HTTPException(404)
-    return templates.get_template("sheet_pdf.html").render(
-        sheet=sheet,
-        body_html=pdf.render_markdown(sheet.body),
-        log_qr=qr.log_qr(slug),
-        edit_qr=qr.edit_qr(slug),
-        logo_data=branding.logo_data_uri(),
-    )
+    settings = get_settings()
+    repo_url = settings.repo_url
+    ctx = {
+        "sheet": sheet,
+        "body_html": pdf.render_markdown(sheet.body),
+        "log_qr": qr.log_qr(slug),
+        "edit_qr": qr.edit_qr(slug),
+        "logo_data": branding.logo_data_uri(),
+        "brand_mark": branding.brand_mark_data_uri(),
+        "repo_url": repo_url,
+        "repo_url_display": repo_url.split("://", 1)[-1],
+    }
+    return sheet_templates.render(template or sheet_templates.get_active(), ctx)
 
 
-def _render(slug: str) -> pdf.RenderResult:
+def _render(slug: str, template: str | None = None) -> pdf.RenderResult:
     """Build the Template HTML for a Sheet and render it to a Letter PDF."""
-    return pdf.render_pdf(_build_html(slug))
+    return pdf.render_pdf(_build_html(slug, template))

@@ -14,9 +14,45 @@
 </section>
 
 <section>
+  <h2>Sheet Template</h2>
+  <p class="muted">The layout every Info-Sheet is rendered through. Choose one, or create your own.</p>
+
+  <form method="post" action="/settings/template/active" class="template-pick">
+    <table class="sheets">
+      <thead><tr><th></th><th>Template</th><th>Type</th><th></th></tr></thead>
+      <tbody>
+        {% for t in templates %}
+        <tr>
+          <td><input type="radio" name="name" value="{{ t.name }}" {{ "checked" if t.is_active }}></td>
+          <td><strong>{{ t.name }}</strong>{% if t.is_active %} <span class="badge ok">active</span>{% endif %}</td>
+          <td>{{ t.origin }}</td>
+          <td class="actions">
+            {% if sample_slug %}<a href="/sheet/{{ sample_slug }}/pdf?template={{ t.name }}" target="_blank">Preview</a>{% endif %}
+            <a href="/settings/template/{{ t.name }}/edit">{{ "Edit" if t.origin == "custom" else "Customize" }}</a>
+            {% if t.origin == "custom" %}
+            <form method="post" action="/settings/template/{{ t.name }}/delete" class="inline"
+                  onsubmit="return confirm('Delete custom template {{ t.name }}?')">
+              {% if pin_enabled %}<input name="pin" type="password" placeholder="PIN" size="6">{% endif %}
+              <button type="submit">Delete</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="save-row">
+      {% if pin_enabled %}<label>Space PIN <input name="pin" type="password"></label>{% endif %}
+      <button type="submit">Set active template</button>
+      <a href="/settings/template/new">+ New template</a>
+    </div>
+  </form>
+</section>
+
+<section>
   <h2>Configuration</h2>
   <p>Base URL (for QR codes): <code>{{ base_url }}</code></p>
   <p>PIN gate: <strong>{{ "enabled" if pin_enabled else "disabled" }}</strong></p>
-  <p class="muted">Set via environment (BASE_URL, EDIT_PIN, PIN_ENABLED). See .env.example.</p>
+  <p class="muted">Set via environment (BASE_URL, EDIT_PIN, PIN_ENABLED, REPO_URL). See .env.example.</p>
 </section>
 {% endblock %}

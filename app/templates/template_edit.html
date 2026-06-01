@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ "New template" if is_new else "Edit template: " + name }} — Lantern{% endblock %}
+{% block content %}
+<h1>{{ "New sheet template" if is_new else ("Customize: " + name if origin == "builtin" else "Edit template: " + name) }}</h1>
+
+{% if origin == "builtin" and not is_new %}
+<p class="muted">This is a built-in template. Saving stores a <strong>custom copy</strong> under the
+same name that shadows the built-in (the built-in is never modified).</p>
+{% endif %}
+
+<form method="post" action="/settings/template/save" class="template-editor">
+  <div class="grid">
+    <div class="fields">
+      <label>Template name (lowercase, digits, hyphens)
+        <input name="name" value="{{ name }}" pattern="[a-z0-9][a-z0-9-]*" required
+               {{ "readonly" if origin == "builtin" and not is_new }}>
+      </label>
+      <label>Template HTML (Jinja)
+        <textarea name="html" rows="26" spellcheck="false"
+                  style="font-family:monospace;white-space:pre;">{{ html }}</textarea>
+      </label>
+      <div class="save-row">
+        <label>Your name <input name="author" placeholder="optional"></label>
+        {% if pin_enabled %}<label>Space PIN <input name="pin" type="password"></label>{% endif %}
+        <button type="submit">Save template</button>
+        <a href="/settings">Cancel</a>
+      </div>
+    </div>
+
+    <aside class="help">
+      <h3>Available variables</h3>
+      <p class="muted">Use these in your template. Render the procedure with
+        <code>{{ "{{ body_html | safe }}" }}</code>.</p>
+      <dl>
+        {% for var, desc in context_vars %}
+        <dt><code>{{ var }}</code></dt><dd class="muted">{{ desc }}</dd>
+        {% endfor %}
+      </dl>
+      <p class="muted">Page size is US Letter. Keep the document to one page — overflow
+        is detected on save.</p>
+    </aside>
+  </div>
+</form>
+{% endblock %}
