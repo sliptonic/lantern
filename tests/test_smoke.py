@@ -167,6 +167,19 @@ def test_page_size_switch(client):
     assert pagesize.get() == "letter"
 
 
+def test_editor_preview_and_overflow_banner(client):
+    from app import state
+
+    client.post("/sheet/save", data={"machine": "Mill", "author": "a", "body": "x"})
+    page = client.get("/sheet/mill/edit").text
+    assert "/static/preview.js" in page          # live preview wired in
+    assert 'class="page-preview"' in page         # the page-ratio preview box
+
+    # When the server marks a sheet overflowing, the editor shows the banner.
+    state.mark_saved("mill", overflowing=True)
+    assert "too long to fit one page" in client.get("/sheet/mill/edit").text
+
+
 def test_batch_print_queue(client):
     from app import state
 

@@ -54,14 +54,22 @@ def dashboard(request: Request):
 
 @router.get("/sheet/{slug}/edit", response_class=HTMLResponse)
 def edit_form(request: Request, slug: str):
+    exists = content.exists(slug)
     sheet = content.load(slug) or Sheet(slug=slug, machine="")
-    ctx = base_context(request) | {"sheet": sheet, "slug": slug, "is_new": not content.exists(slug)}
+    ctx = base_context(request) | {
+        "sheet": sheet, "slug": slug, "is_new": not exists,
+        "page": pagesize.resolve(),
+        "overflowing": bool(state.get_state(slug).get("overflowing")) if exists else False,
+    }
     return render("sheet_edit.html", ctx)
 
 
 @router.get("/new", response_class=HTMLResponse)
 def new_form(request: Request):
-    ctx = base_context(request) | {"sheet": Sheet(slug="", machine=""), "slug": "", "is_new": True}
+    ctx = base_context(request) | {
+        "sheet": Sheet(slug="", machine=""), "slug": "", "is_new": True,
+        "page": pagesize.resolve(), "overflowing": False,
+    }
     return render("sheet_edit.html", ctx)
 
 

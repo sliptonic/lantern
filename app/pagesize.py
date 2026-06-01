@@ -15,9 +15,9 @@ KEY = "page_size"
 # css_size -> @page size keyword; format -> Playwright paper format.
 PAGE_SIZES: dict[str, dict[str, str]] = {
     "letter": {"label": "US Letter (8.5 × 11 in)", "css_size": "Letter",
-               "format": "Letter", "width": "8.5in", "height": "11in"},
+               "format": "Letter", "width": "8.5in", "height": "11in", "aspect": "8.5 / 11"},
     "a4": {"label": "A4 (210 × 297 mm)", "css_size": "A4",
-           "format": "A4", "width": "210mm", "height": "297mm"},
+           "format": "A4", "width": "210mm", "height": "297mm", "aspect": "210 / 297"},
 }
 
 DEFAULT = "letter"
