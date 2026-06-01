@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{{ "New sheet" if is_new else "Edit " + slug }} — Lantern{% endblock %}
+{% block content %}
+<h1>{{ "New Info-Sheet" if is_new else "Edit: " + (sheet.machine or slug) }}</h1>
+
+<form method="post" action="/sheet/save" class="editor">
+  <input type="hidden" name="slug" value="{{ sheet.slug }}">
+
+  <div class="grid">
+    <div class="fields">
+      <label>Machine name
+        <input name="machine" value="{{ sheet.machine }}" required>
+      </label>
+      <label>Contact — name
+        <input name="contact_name" value="{{ sheet.contact.name }}">
+      </label>
+      <label>Contact — info (email / phone / hours)
+        <input name="contact_info" value="{{ sheet.contact.info }}">
+      </label>
+      <label>Training required
+        <textarea name="training_required" rows="2">{{ sheet.training_required }}</textarea>
+      </label>
+      {# TODO(roadmap #2): repeatable Software Links / Manual Links inputs. #}
+
+      <label>Procedure / checklist (Markdown)
+        <textarea name="body" rows="16" id="body">{{ sheet.body }}</textarea>
+      </label>
+    </div>
+
+    <div class="preview-pane">
+      {# TODO(roadmap #4): live client-side render inside this Letter-ratio box
+         with an "Overflows one page!" warning. Vendor marked.js into static/. #}
+      <div class="letter-box">
+        <p class="muted">Live single-page preview lands here (roadmap #4).</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="save-row">
+    <label>Your name <input name="author" placeholder="who's editing?"></label>
+    {% if pin_enabled %}<label>Space PIN <input name="pin" type="password"></label>{% endif %}
+    <button type="submit">Save (new revision)</button>
+    {% if not is_new %}<a href="/sheet/{{ slug }}/pdf">View PDF</a>
+    <a href="/sheet/{{ slug }}/history">History</a>{% endif %}
+  </div>
+</form>
+{% endblock %}

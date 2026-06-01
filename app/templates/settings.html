@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Settings — Lantern{% endblock %}
+{% block content %}
+<h1>Settings</h1>
+
+<section>
+  <h2>Branding — Logo</h2>
+  <p class="muted">{{ "A logo is set." if has_logo else "No logo uploaded yet." }}</p>
+  <form method="post" action="/settings/logo" enctype="multipart/form-data" class="log">
+    <label>Logo image <input type="file" name="logo" accept="image/*" required></label>
+    {% if pin_enabled %}<label>Space PIN <input name="pin" type="password"></label>{% endif %}
+    <button type="submit">Upload</button>
+  </form>
+</section>
+
+<section>
+  <h2>Configuration</h2>
+  <p>Base URL (for QR codes): <code>{{ base_url }}</code></p>
+  <p>PIN gate: <strong>{{ "enabled" if pin_enabled else "disabled" }}</strong></p>
+  <p class="muted">Set via environment (BASE_URL, EDIT_PIN, PIN_ENABLED). See .env.example.</p>
+</section>
+{% endblock %}

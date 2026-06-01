@@ -1,0 +1,21 @@
+services:
+  lantern:
+    build: .
+    image: lantern:latest
+    container_name: lantern
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Override BASE_URL to the address phones will reach on your LAN.
+      BASE_URL: "${BASE_URL:-http://localhost:8080}"
+      EDIT_PIN: "${EDIT_PIN:-changeme}"
+      PIN_ENABLED: "${PIN_ENABLED:-1}"
+      DATA_DIR: "/data"
+    volumes:
+      # Single persistent volume: content git repo + sqlite db + uploaded logo.
+      # On TrueNAS, point this at a dataset so snapshots back it up.
+      - lantern_data:/data
+
+volumes:
+  lantern_data:

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Log usage — {{ machine }}{% endblock %}
+{% block content %}
+<h1>Usage Log — {{ machine }}</h1>
+
+{% if done %}
+  <p class="ok-msg">✅ Logged. Thanks!</p>
+  <p><a href="/sheet/{{ slug }}/log">Log another entry</a></p>
+{% else %}
+<form method="post" action="/sheet/{{ slug }}/log" class="log">
+  <label>Your name <input name="name" required autofocus></label>
+  <label>What were you doing? <input name="activity" required></label>
+  <label>Notes (optional) <textarea name="notes" rows="3"></textarea></label>
+  <button type="submit">Submit</button>
+</form>
+<p class="muted">No account needed — just tell us who you are and what you did.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}History — {{ slug }}{% endblock %}
+{% block content %}
+<h1>Revision history: {{ slug }}</h1>
+<p><a href="/sheet/{{ slug }}/edit">← back to editor</a></p>
+
+<table class="sheets">
+  <thead><tr><th>When</th><th>Author</th><th>Message</th><th></th></tr></thead>
+  <tbody>
+    {% for r in revisions %}
+    <tr>
+      <td class="muted">{{ r.when }}</td>
+      <td>{{ r.author }}</td>
+      <td>{{ r.message }} <span class="muted">{{ r.commit[:8] }}</span></td>
+      <td>
+        {% if not loop.first %}
+        <form method="post" action="/sheet/{{ slug }}/revert" class="inline">
+          <input type="hidden" name="commit" value="{{ r.commit }}">
+          <input name="author" placeholder="your name" size="10">
+          {% if pin_enabled %}<input name="pin" type="password" placeholder="PIN" size="6">{% endif %}
+          <button type="submit">Revert to this</button>
+        </form>
+        {% else %}<span class="muted">current</span>{% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

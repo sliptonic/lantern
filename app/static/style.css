@@ -1,0 +1,42 @@
+:root { --fg:#1a1a1a; --muted:#777; --line:#e2e2e2; --accent:#2b6cb0; }
+* { box-sizing: border-box; }
+body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+       color: var(--fg); background:#fafafa; line-height:1.4; }
+main { max-width: 60rem; margin: 1.5rem auto; padding: 0 1rem; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+h1 { font-size: 1.6rem; } h2 { font-size: 1.2rem; }
+
+.topbar { display:flex; align-items:center; justify-content:space-between;
+          background:#fff; border-bottom:1px solid var(--line); padding:.75rem 1.25rem; }
+.topbar .brand { font-weight:700; font-size:1.1rem; }
+.topbar nav a { margin-left:1rem; }
+
+.muted { color: var(--muted); font-size:.9em; }
+.badge { padding:.1rem .5rem; border-radius:1rem; font-size:.75rem; font-weight:600; }
+.badge.ok { background:#e6f4ea; color:#1e7e34; }
+.badge.dirty { background:#fff3cd; color:#8a6d00; }
+.badge.over { background:#fbe3e4; color:#a11; }
+.ok-msg { color:#1e7e34; font-weight:600; }
+
+table.sheets { width:100%; border-collapse:collapse; background:#fff; margin:1rem 0; }
+table.sheets th, table.sheets td { text-align:left; padding:.5rem .6rem; border-bottom:1px solid var(--line); vertical-align:top; }
+.actions a, .actions form { display:inline-block; margin-right:.6rem; }
+
+.cols { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-top:1.5rem; }
+.cols section { background:#fff; border:1px solid var(--line); border-radius:.4rem; padding:1rem; }
+.activity li { margin-bottom:.35rem; }
+
+form label { display:block; margin:.6rem 0 .2rem; font-weight:600; font-size:.9rem; }
+form input, form textarea { width:100%; padding:.4rem; border:1px solid #ccc; border-radius:.3rem; font:inherit; }
+form.inline { display:inline-flex; gap:.3rem; align-items:center; }
+form.inline input { width:auto; }
+button { background:var(--accent); color:#fff; border:0; padding:.45rem .9rem; border-radius:.3rem; font:inherit; cursor:pointer; }
+button:hover { filter:brightness(1.08); }
+
+.editor .grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+.save-row { display:flex; gap:1rem; align-items:flex-end; margin-top:1rem; flex-wrap:wrap; }
+.save-row label { margin:0; }
+.preview-pane .letter-box { aspect-ratio: 8.5 / 11; border:1px dashed #aaa; background:#fff;
+                            padding:1rem; display:flex; align-items:center; justify-content:center; text-align:center; }
+.log { max-width: 32rem; }

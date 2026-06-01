@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+{# The uniform Template: every Sheet renders through this into one Letter Page.
+   Structured Fields fill fixed zones; the Body markdown is injected as HTML. #}
+<head>
+<meta charset="utf-8">
+<style>
+  @page { size: Letter; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    color: #111;
+    /* One Letter Page = 8.5in x 11in. */
+    width: 8.5in; height: 11in;
+    padding: 0.5in;
+    display: flex; flex-direction: column;
+  }
+  header.sheet-head {
+    display: flex; align-items: center; gap: 0.25in;
+    border-bottom: 3px solid #111; padding-bottom: 0.15in;
+  }
+  header.sheet-head img.logo { height: 0.7in; }
+  header.sheet-head h1 { font-size: 28pt; margin: 0; }
+  .meta { display: flex; gap: 0.4in; margin: 0.15in 0; font-size: 10pt; }
+  .meta .label { text-transform: uppercase; letter-spacing: .05em; color: #666; font-size: 8pt; }
+  .body { flex: 1; font-size: 11pt; line-height: 1.35; overflow: hidden; }
+  .body h2 { font-size: 14pt; border-bottom: 1px solid #ccc; }
+  footer.sheet-foot {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    border-top: 3px solid #111; padding-top: 0.15in;
+  }
+  .qr { text-align: center; font-size: 8pt; }
+  .qr img { width: 1.1in; height: 1.1in; display: block; }
+</style>
+</head>
+<body>
+  <header class="sheet-head">
+    {# Logo is served from the data volume; absent until uploaded. #}
+    <h1>{{ sheet.machine }}</h1>
+  </header>
+
+  <div class="meta">
+    {% if sheet.contact.name %}
+    <div><div class="label">Contact</div>{{ sheet.contact.name }}<br>{{ sheet.contact.info }}</div>
+    {% endif %}
+    {% if sheet.training_required %}
+    <div><div class="label">Training required</div>{{ sheet.training_required }}</div>
+    {% endif %}
+  </div>
+
+  <div class="body">
+    {{ body_html | safe }}
+  </div>
+
+  <footer class="sheet-foot">
+    <div class="qr"><img src="{{ log_qr }}" alt="Log usage"><div>Scan to LOG USE</div></div>
+    <div class="qr"><img src="{{ edit_qr }}" alt="Edit sheet"><div>Scan to EDIT</div></div>
+  </footer>
+</body>
+</html>
