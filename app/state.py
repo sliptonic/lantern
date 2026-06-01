@@ -31,6 +31,23 @@ def recent_log(limit: int = 25, slug: str | None = None) -> list[dict]:
     return [dict(r) for r in rows]
 
 
+def log_for(slug: str) -> list[dict]:
+    """Every Log Entry for a machine, newest first (for the log view + export)."""
+    with connect() as conn:
+        rows = conn.execute(
+            "SELECT * FROM usage_log WHERE slug = ? ORDER BY id DESC", (slug,)
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
+def log_count(slug: str) -> int:
+    with connect() as conn:
+        row = conn.execute(
+            "SELECT COUNT(*) AS n FROM usage_log WHERE slug = ?", (slug,)
+        ).fetchone()
+    return row["n"]
+
+
 # --- Sheet / Print-Queue state ---------------------------------------------
 
 def _ensure_row(conn, slug: str) -> None:

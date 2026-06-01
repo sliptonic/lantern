@@ -62,6 +62,7 @@
     {% if pin_enabled %}<label>Space PIN <input name="pin" type="password"></label>{% endif %}
     <button type="submit">Save (new revision)</button>
     {% if not is_new %}<a href="/sheet/{{ slug }}/pdf">View PDF</a>
+    <a href="/sheet/{{ slug }}/logs">Usage log</a>
     <a href="/sheet/{{ slug }}/history">History</a>{% endif %}
   </div>
 </form>

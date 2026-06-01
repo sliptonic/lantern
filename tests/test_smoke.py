@@ -167,6 +167,27 @@ def test_page_size_switch(client):
     assert pagesize.get() == "letter"
 
 
+def test_usage_log_view_and_csv(client):
+    client.post("/sheet/save", data={"machine": "Sander", "author": "a", "body": "sand"})
+    client.post("/sheet/sander/log", data={"name": "Pat", "activity": "Sanded oak", "notes": "grit 120"})
+    client.post("/sheet/sander/log", data={"name": "Lee", "activity": "Sanded pine", "notes": ""})
+
+    # HTML view lists both entries.
+    page = client.get("/sheet/sander/logs")
+    assert page.status_code == 200
+    assert "Pat" in page.text and "Lee" in page.text
+    assert "Sanded oak" in page.text and "Sanded pine" in page.text
+
+    # CSV export has a header + a row per entry.
+    csv_resp = client.get("/sheet/sander/logs.csv")
+    assert csv_resp.status_code == 200
+    assert "text/csv" in csv_resp.headers["content-type"]
+    assert "attachment" in csv_resp.headers["content-disposition"]
+    lines = [ln for ln in csv_resp.text.splitlines() if ln.strip()]
+    assert lines[0] == "timestamp,name,activity,notes"
+    assert len(lines) == 3  # header + 2 entries
+
+
 def test_default_pin_warning(tmp_path, monkeypatch):
     monkeypatch.setenv("DATA_DIR", str(tmp_path))
     monkeypatch.setenv("BASE_URL", "http://test.local")
