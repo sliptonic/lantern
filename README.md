@@ -97,12 +97,15 @@ lives in one place (`DATA_DIR`). Back that up and you've backed up everything.
 ## Running on TrueNAS SCALE
 
 Lantern is a single container designed to run on a locally hosted TrueNAS SCALE
-server. Deploy it as a custom app (or via the bundled `docker-compose.yml`) and:
+server. There's a ready-made bind-mount compose file and a step-by-step guide:
 
-- Map a host **dataset** to the container's `/data` so TrueNAS snapshots cover
-  all your sheets, history, and logs.
-- Set `BASE_URL` to the server's LAN address and `EDIT_PIN` to your wall PIN.
-- Publish port `8080`.
+- **Guide:** [`docs/truenas.md`](docs/truenas.md)
+- **Compose + env template:** [`deploy/truenas/`](deploy/truenas/)
+
+In short: create a dataset, bind-mount it to the container's `/data` (so TrueNAS
+snapshots cover all your sheets, history, logs, templates, and logo), set
+`BASE_URL` to the server's LAN address and `EDIT_PIN` to your wall PIN, and
+publish port `8080`.
 
 ## For developers
 
