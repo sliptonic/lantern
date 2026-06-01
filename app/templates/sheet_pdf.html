@@ -36,7 +36,8 @@
 </head>
 <body>
   <header class="sheet-head">
-    {# Logo is served from the data volume; absent until uploaded. #}
+    {# Logo (uploaded via Settings) is inlined as a data URI; absent until set. #}
+    {% if logo_data %}<img class="logo" src="{{ logo_data }}" alt="">{% endif %}
     <h1>{{ sheet.machine }}</h1>
   </header>
 

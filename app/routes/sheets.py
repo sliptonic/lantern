@@ -5,7 +5,7 @@ from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from starlette.concurrency import run_in_threadpool
 
-from .. import content, pdf, qr, state
+from .. import branding, content, pdf, qr, state
 from ..models import Contact, Sheet
 from ..security import require_pin
 from ..templating import base_context, render, templates
@@ -119,15 +119,24 @@ async def sheet_pdf(slug: str):
     )
 
 
-def _render(slug: str) -> pdf.RenderResult:
-    """Build the Template HTML for a Sheet and render it to a Letter PDF."""
+def _build_html(slug: str) -> str:
+    """Render the uniform Template to HTML for a Sheet (no PDF step).
+
+    Separated from PDF rendering so the templated output — including the
+    embedded Logo — is testable without headless Chromium.
+    """
     sheet = content.load(slug)
     if sheet is None:
         raise HTTPException(404)
-    html = templates.get_template("sheet_pdf.html").render(
+    return templates.get_template("sheet_pdf.html").render(
         sheet=sheet,
         body_html=pdf.render_markdown(sheet.body),
         log_qr=qr.log_qr(slug),
         edit_qr=qr.edit_qr(slug),
+        logo_data=branding.logo_data_uri(),
     )
-    return pdf.render_pdf(html)
+
+
+def _render(slug: str) -> pdf.RenderResult:
+    """Build the Template HTML for a Sheet and render it to a Letter PDF."""
+    return pdf.render_pdf(_build_html(slug))

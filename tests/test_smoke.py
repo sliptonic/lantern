@@ -58,3 +58,31 @@ def test_history_records_revisions(client):
     assert r.status_code == 200
     # Two saves -> two revisions.
     assert r.text.count("Revert to this") >= 1
+
+
+# Minimal valid 1x1 PNG.
+_PNG_1x1 = bytes.fromhex(
+    "89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4"
+    "890000000a49444154789c6360000002000154a24f5f0000000049454e44ae426082"
+)
+
+
+def test_logo_embedded_in_sheet_when_present(client):
+    from app.config import get_settings
+    from app.routes.sheets import _build_html
+
+    client.post("/sheet/save", data={"machine": "Laser Cutter", "author": "a", "body": "x"})
+
+    # No logo uploaded yet -> no logo image in the rendered sheet.
+    # (QR codes are svg data URIs and are always present; the logo is a
+    # class="logo" png, so assert specifically on that.)
+    assert 'class="logo"' not in _build_html("laser-cutter")
+
+    # Upload a logo via Settings, then it is inlined as a base64 data URI.
+    r = client.post("/settings/logo", files={"logo": ("logo.png", _PNG_1x1, "image/png")})
+    assert r.status_code in (200, 303)
+    assert get_settings().logo_path.exists()
+
+    html = _build_html("laser-cutter")
+    assert 'class="logo"' in html
+    assert "data:image/png;base64," in html
