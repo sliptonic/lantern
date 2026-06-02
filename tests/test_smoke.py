@@ -341,6 +341,17 @@ def test_default_pin_warning(tmp_path, monkeypatch):
     assert pin_is_default() is False
 
 
+def test_task_list_markdown():
+    from app.pdf import render_markdown
+
+    html = render_markdown("- [ ] todo\n- [x] done\n- plain")
+    # GitHub-style task items become checkboxes; the checked one is checked.
+    assert html.count('type="checkbox"') == 2
+    assert 'checked="checked"' in html
+    assert "contains-task-list" in html
+    assert "<li>plain</li>" in html  # non-task item unaffected
+
+
 def test_seed_creates_samples(tmp_path, monkeypatch):
     monkeypatch.setenv("DATA_DIR", str(tmp_path))
     monkeypatch.setenv("BASE_URL", "http://test.local")
