@@ -4,11 +4,14 @@
  * an Image (uploaded immediately via AJAX, referenced by token), or a QR from
  * a URL. The single `row_value` field per row carries the image token or the
  * URL, so the save form stays text-only.
+ *
+ * The live preview renders the REAL print template (POST /sheet/preview) into
+ * an iframe and scales it to fit the column, so it matches the printed PDF
+ * exactly and the overflow check measures the true page, not the device
+ * viewport (issue #14).
  */
 (function () {
   "use strict";
-
-  function md(s) { return window.lanternMarkdown ? window.lanternMarkdown(s) : ""; }
 
   // Configure a row's right-side controls from its current kind/value.
   function syncRow(row) {
@@ -40,14 +43,14 @@
         var thumb = row.querySelector(".row-image-thumb");
         value.value = j.token;
         thumb.src = j.url; thumb.hidden = false;
-        renderPreview();
+        schedulePreview();
       })
       .catch(function () { alert("Image upload failed."); });
   }
 
   function wireRow(row) {
     syncRow(row);
-    row.querySelector(".row-kind").addEventListener("change", function () { syncRow(row); renderPreview(); });
+    row.querySelector(".row-kind").addEventListener("change", function () { syncRow(row); schedulePreview(); });
     var file = row.querySelector(".row-image-file");
     if (file) file.addEventListener("change", function () {
       if (file.files && file.files[0]) uploadImage(row, file.files[0]);
@@ -57,46 +60,59 @@
       var grid = document.getElementById("body-grid");
       if (grid.querySelectorAll(".body-row").length > 1) row.remove();
       else { row.querySelector("textarea").value = ""; row.querySelector(".row-kind").value = "none"; syncRow(row); }
-      renderPreview();
+      schedulePreview();
     });
   }
 
-  var preview, warn;
-  function renderPreview() {
-    if (!preview) return;
-    var rows = document.querySelectorAll("#body-grid .body-row");
-    preview.innerHTML = "";
-    rows.forEach(function (row) {
-      var left = row.querySelector("textarea[name=row_left]").value;
-      var kind = row.querySelector(".row-kind").value;
-      var value = row.querySelector(".row-value").value;
-      var hasRight = (kind === "image" || kind === "qr") && value;
-      var pr = document.createElement("div");
-      pr.className = "pp-row" + (hasRight ? "" : " full");
-      var l = document.createElement("div"); l.className = "pp-left"; l.innerHTML = md(left);
-      pr.appendChild(l);
-      if (kind === "image" && value) {
-        var r = document.createElement("div"); r.className = "pp-right";
-        var im = document.createElement("img"); im.src = "/image/" + value; r.appendChild(im);
-        pr.appendChild(r);
-      } else if (kind === "qr" && value) {
-        var q = document.createElement("div"); q.className = "pp-right pp-qr";
-        q.textContent = "▢ QR → " + value; pr.appendChild(q);
-      }
-      preview.appendChild(pr);
-    });
-    var over = preview.scrollHeight > preview.clientHeight + 1;
-    preview.classList.toggle("overflowing", over);
+  // ---- Live preview (real print template, rendered server-side) ----
+  var form, frame, scaleWrap, warn, timer;
+
+  // Scale the rendered page to fit its column and flag overflow. The iframe
+  // body lays out at true page size (fixed inches), so these measurements are
+  // device-independent and track the actual printed page.
+  function fitAndCheck() {
+    if (!frame || !scaleWrap) return;
+    var doc = frame.contentDocument;
+    if (!doc || !doc.body) return;
+    var pw = doc.body.offsetWidth, ph = doc.body.offsetHeight;
+    if (!pw || !ph) return;
+    frame.style.width = pw + "px";
+    frame.style.height = ph + "px";
+    var scale = scaleWrap.clientWidth / pw;
+    frame.style.transform = "scale(" + scale + ")";
+    scaleWrap.style.height = (ph * scale) + "px";
+    // .body is flex:1; overflow:hidden inside a fixed-height page — when its
+    // content is taller than the slot, the sheet spills onto a second page.
+    var body = doc.querySelector(".body");
+    var over = !!body && body.scrollHeight > body.clientHeight + 1;
     if (warn) warn.style.display = over ? "block" : "none";
+    frame.classList.toggle("overflowing", over);
+  }
+
+  function refreshPreview() {
+    if (!form || !frame) return;
+    fetch("/sheet/preview", { method: "POST", body: new FormData(form) })
+      .then(function (r) { return r.ok ? r.text() : null; })
+      .then(function (html) {
+        if (html == null) return;     // keep the last good preview on error
+        frame.onload = fitAndCheck;
+        frame.srcdoc = html;
+      })
+      .catch(function () { /* network error — keep last good preview */ });
+  }
+
+  function schedulePreview() {
+    clearTimeout(timer);
+    timer = setTimeout(refreshPreview, 350);
   }
 
   document.addEventListener("DOMContentLoaded", function () {
     var grid = document.getElementById("body-grid");
     if (!grid) return;
-    preview = document.getElementById("preview-body");
+    form = document.querySelector("form.editor");
+    frame = document.getElementById("preview-frame");
+    scaleWrap = document.querySelector(".pp-scale");
     warn = document.getElementById("overflow-warn");
-    var title = document.getElementById("preview-title");
-    var titleInput = document.querySelector('input[name="title"]');
 
     grid.querySelectorAll(".body-row").forEach(wireRow);
 
@@ -106,13 +122,11 @@
       var node = tpl.content.firstElementChild.cloneNode(true);
       grid.appendChild(node);
       wireRow(node);
-      renderPreview();
+      schedulePreview();
     });
 
-    grid.addEventListener("input", renderPreview);
-    if (titleInput && title) titleInput.addEventListener("input", function () {
-      title.textContent = titleInput.value || "Title";
-    });
-    renderPreview();
+    if (form) form.addEventListener("input", schedulePreview);
+    window.addEventListener("resize", fitAndCheck);
+    refreshPreview();   // initial render
   });
 })();

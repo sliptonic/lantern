@@ -5,6 +5,7 @@ from pathlib import Path
 
 from fastapi.templating import Jinja2Templates
 
+from . import baseurl
 from .config import get_settings
 from .security import pin_is_default
 
@@ -16,7 +17,7 @@ def base_context(request) -> dict:
     settings = get_settings()
     return {
         "request": request,
-        "base_url": settings.base_url,
+        "base_url": baseurl.get(),
         "pin_enabled": settings.pin_enabled,
         "insecure_pin": pin_is_default(),
         "repo_url": settings.repo_url,

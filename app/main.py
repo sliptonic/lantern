@@ -8,6 +8,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
+from . import baseurl
 from .config import get_settings
 from .content import _repo  # ensures content repo exists on startup
 from .db import init_db
@@ -51,4 +52,4 @@ app.include_router(admin.router)
 
 @app.get("/healthz")
 def healthz() -> dict:
-    return {"status": "ok", "base_url": get_settings().base_url}
+    return {"status": "ok", "base_url": baseurl.get()}

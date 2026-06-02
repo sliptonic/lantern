@@ -48,6 +48,19 @@
     {% endfor %}
   </section>
 
+  <section>
+    <h2>Base URL</h2>
+    <p class="muted">The address phones reach this server at — baked into every
+      sheet's QR codes. Use the host's LAN IP or hostname and port (e.g.
+      <code>http://192.168.1.50:8080</code>), not <code>localhost</code>.</p>
+    <label>Base URL
+      <input type="url" name="base_url" value="{{ base_url }}"
+             placeholder="http://192.168.1.50:8080">
+    </label>
+    <p class="muted">Changing this re-renders every QR code and re-queues all
+      sheets for printing, so the posted copies can be replaced.</p>
+  </section>
+
   <div class="save-row">
     <button type="submit">Save settings</button>
   </div>
@@ -82,9 +95,10 @@
 
 <section>
   <h2>Configuration</h2>
-  <p>Base URL (for QR codes): <code>{{ base_url }}</code></p>
   <p>PIN gate: <strong>{{ "enabled" if pin_enabled else "disabled" }}</strong></p>
-  <p class="muted">Set via environment (BASE_URL, EDIT_PIN, PIN_ENABLED, PAGE_SIZE, REPO_URL). See .env.example.</p>
+  <p class="muted">The PIN and PIN gate are set via environment (EDIT_PIN,
+    PIN_ENABLED). Base URL and page size default from the environment (BASE_URL,
+    PAGE_SIZE) but are overridable above. See .env.example.</p>
 </section>
 
 <script>

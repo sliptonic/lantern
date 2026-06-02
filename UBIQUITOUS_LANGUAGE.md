@@ -73,9 +73,12 @@ Anyone at a posted Sheet using only their phone and a QR code — no app, no
 account. The primary actor for logging and edit-triggering.
 
 **Base URL**
-The configurable root address (`BASE_URL`) that all QR codes and absolute links
-are built from. Lets the same build work behind a static LAN IP, an mDNS
-hostname, or a real domain.
+The configurable root address all QR codes and absolute links are built from.
+Lets the same build work behind a static LAN IP, an mDNS hostname, or a real
+domain. Defaults to the `BASE_URL` env var but is overridable at runtime in
+Settings — because the right value (host address + published port) often isn't
+known until deploy time. Changing it re-renders every QR code, so all Sheets are
+re-flagged Dirty for reprinting.
 
 ---
 
@@ -181,5 +184,5 @@ Sheets. Home of admin actions.
 A feed of recent Log Entries surfaced on the Dashboard.
 
 **Settings**
-Admin configuration: Logo, active Template (and custom Template editing), and
-Page Size. Saving changes is PIN-gated.
+Admin configuration: Logo, active Template (and custom Template editing), Page
+Size, and Base URL. Saving changes is PIN-gated.

@@ -1,7 +1,6 @@
 {% extends "base.html" %}
 {% block title %}{{ "New sheet" if is_new else "Edit " + slug }} — Lantern{% endblock %}
 {% block head %}
-<script src="/static/preview.js"></script>
 <script src="/static/editor.js"></script>
 {% endblock %}
 
@@ -98,11 +97,13 @@
 
     <div class="preview-pane">
       <div id="overflow-warn" class="overflow-warn">⚠️ Overflows one {{ page.css_size }} page — trim to fit.</div>
-      <p class="muted preview-cap">Live preview ({{ page.css_size }}) — the server makes the final, exact check.</p>
-      <div class="page-preview" style="aspect-ratio: {{ page.aspect }};">
-        <div class="pp-head"><span id="preview-title">{{ sheet.title or "Title" }}</span></div>
-        <div id="preview-body" class="pp-body"></div>
-        <div class="pp-foot">LOG · lantern · EDIT</div>
+      <p class="muted preview-cap">Live preview ({{ page.css_size }}) — the actual printed page; the
+        single-page rule is finally enforced on save.</p>
+      {# The iframe renders the real print template (POST /sheet/preview) and is
+         scaled to fit the column in JS, so the preview matches the PDF and the
+         overflow check measures the true page, not the device (issue #14). #}
+      <div class="pp-scale">
+        <iframe id="preview-frame" class="page-preview" title="Print preview" scrolling="no"></iframe>
       </div>
     </div>
   </div>

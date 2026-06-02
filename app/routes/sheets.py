@@ -100,6 +100,39 @@ def new_form(request: Request, start: str = ""):
     return render("sheet_edit.html", ctx)
 
 
+@router.post("/sheet/preview", response_class=HTMLResponse)
+def preview_sheet(
+    title: str = Form(""),
+    slug: str = Form(""),
+    contact_name: str = Form(""),
+    contact_info: str = Form(""),
+    requirements: str = Form(""),
+    row_left: list[str] = Form(default=[]),
+    row_kind: list[str] = Form(default=[]),
+    row_value: list[str] = Form(default=[]),
+    sw_label: list[str] = Form(default=[]),
+    sw_url: list[str] = Form(default=[]),
+    man_label: list[str] = Form(default=[]),
+    man_url: list[str] = Form(default=[]),
+):
+    """Render the editor's live preview: the *actual* print template applied to
+    the in-progress (unsaved) form data. The editor shows this in an iframe so
+    the preview matches the printed PDF exactly — same template, fonts, page
+    geometry — instead of a separate approximation. Read-only (creates no
+    state), so it isn't PIN-gated."""
+    slug = slug.strip() or content.slugify(title) or "preview"
+    sheet = Sheet(
+        slug=slug,
+        title=title.strip() or "Untitled",
+        contact=Contact(name=contact_name.strip(), info=contact_info.strip()),
+        software_links=_links(sw_label, sw_url),
+        manual_links=_links(man_label, man_url),
+        requirements=requirements.strip(),
+        rows=_rows(row_left, row_kind, row_value),
+    )
+    return HTMLResponse(_sheet_html(sheet, slug))
+
+
 @router.post("/sheet/save")
 async def save_sheet(
     request: Request,
@@ -219,15 +252,14 @@ async def sheet_pdf(slug: str, template: str | None = None):
     )
 
 
-def _build_html(slug: str, template: str | None = None) -> str:
-    """Render a Sheet through the active (or given) Template to HTML.
+def _sheet_html(sheet: Sheet, slug: str, template: str | None = None) -> str:
+    """Render a Sheet object through the active (or given) Template to HTML.
 
-    Separated from PDF rendering so the templated output — logo, footer
-    branding, layout — is testable without headless Chromium.
+    Works on an in-memory Sheet (not necessarily saved), so it backs both the
+    PDF pipeline and the editor's live preview. Separated from PDF rendering so
+    the templated output — logo, footer branding, layout — is testable without
+    headless Chromium.
     """
-    sheet = content.load(slug)
-    if sheet is None:
-        raise HTTPException(404)
     settings = get_settings()
     repo_url = settings.repo_url
     rows = []
@@ -253,6 +285,14 @@ def _build_html(slug: str, template: str | None = None) -> str:
         "page": pagesize.resolve(),
     }
     return sheet_templates.render(template or sheet_templates.get_active(), ctx)
+
+
+def _build_html(slug: str, template: str | None = None) -> str:
+    """Render a saved Sheet (by slug) through the active/given Template to HTML."""
+    sheet = content.load(slug)
+    if sheet is None:
+        raise HTTPException(404)
+    return _sheet_html(sheet, slug, template)
 
 
 def _render(slug: str, template: str | None = None) -> pdf.RenderResult:
