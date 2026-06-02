@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Usage Log routes — the frictionless, open (no PIN) walk-up flow,
 plus organizer-facing log viewing and CSV export."""
 from __future__ import annotations

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Queries over the SQLite event/state store: Usage Log + Print Queue.
 
 Wraps app/db.py so routes never touch SQL directly.

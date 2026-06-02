@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Shared Jinja2 template environment."""
 from __future__ import annotations
 

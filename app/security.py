@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Soft-gate helpers for the PIN.
 
 This is NOT authentication — it is a shared wall-posted secret that adds a

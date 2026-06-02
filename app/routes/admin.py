@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Admin Settings routes: unified settings save (logo + template + page size),
 plus sheet-Template create/edit/delete. All write actions are PIN-gated.
 """

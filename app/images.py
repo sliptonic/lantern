@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Image pool for sheet body rows.
 
 Images embedded in sheet bodies are stored as a flat pool of files in the data

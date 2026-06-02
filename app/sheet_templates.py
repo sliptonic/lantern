@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Multi-template support for rendering Info-Sheets.
 
 A sheet Template is a standalone Jinja HTML document that the sheet context is

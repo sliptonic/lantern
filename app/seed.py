@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """First-run sample content.
 
 When the content store has no sheets yet, seed a couple of example Info-Sheets

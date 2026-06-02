@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Page size (US Letter vs A4) for rendered Info-Sheets.
 
 The active size is a persisted setting (changeable in Settings), defaulting to

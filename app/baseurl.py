@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Base URL that every QR code and absolute link is built from.
 
 Defaults to the ``BASE_URL`` env var, but is overridable at runtime in Settings.

@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Branding helpers — embedding the uploaded logo into rendered Sheets.
 
 The Logo is uploaded once via admin Settings and stored at

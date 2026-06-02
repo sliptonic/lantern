@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """QR code generation for the Log QR and Edit QR.
 
 Both encode `${BASE_URL}/sheet/<slug>/...` so they resolve from any phone on

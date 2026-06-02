@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Print Queue routes — the Print Operator's view, Mark Printed, and the
 batch 'print all queued' combined PDF."""
 from __future__ import annotations

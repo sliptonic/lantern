@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Render a Sheet to a branded, single Letter Page PDF and detect Overflow.
 
 Pipeline: Sheet (markdown + frontmatter) -> Template HTML -> headless Chromium
