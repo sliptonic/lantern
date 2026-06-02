@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Usage log — {{ machine }}{% endblock %}
+{% block content %}
+<h1>Usage log: {{ machine }}</h1>
+<p>
+  <a href="/sheet/{{ slug }}/edit">← back to sheet</a>
+  &nbsp;·&nbsp; <strong>{{ entries|length }}</strong> entr{{ "y" if entries|length == 1 else "ies" }}
+  {% if entries %}&nbsp;·&nbsp; <a href="/sheet/{{ slug }}/logs.csv">Download CSV</a>{% endif %}
+</p>
+
+{% if not entries %}
+  <p class="muted">No usage logged yet for this machine.</p>
+{% else %}
+<table class="sheets">
+  <thead><tr><th>When</th><th>Who</th><th>Activity</th><th>Notes</th></tr></thead>
+  <tbody>
+    {% for e in entries %}
+    <tr>
+      <td class="muted">{{ e.created_at }}</td>
+      <td>{{ e.name }}</td>
+      <td>{{ e.activity }}</td>
+      <td>{{ e.notes }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

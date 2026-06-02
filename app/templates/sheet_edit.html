@@ -1,9 +1,25 @@
 {% extends "base.html" %}
 {% block title %}{{ "New sheet" if is_new else "Edit " + slug }} — Lantern{% endblock %}
+{% block head %}<script src="/static/preview.js"></script>{% endblock %}
 {% block content %}
 <h1>{{ "New Info-Sheet" if is_new else "Edit: " + (sheet.machine or slug) }}</h1>
 
-<form method="post" action="/sheet/save" class="editor">
+{% if overflowing %}
+<div class="overflow-banner">⚠️ This sheet is <strong>too long to fit one page</strong>, so it's held
+  out of the print queue. Trim the procedure until the preview fits, then save again.</div>
+{% endif %}
+
+{% if is_new and samples %}
+<div class="start-from">
+  <span class="label">Start from:</span>
+  <a href="/new" class="chip {{ 'active' if not start }}">Blank</a>
+  {% for s in samples %}
+  <a href="/new?start={{ s.slug }}" class="chip {{ 'active' if start == s.slug }}">{{ s.machine }}</a>
+  {% endfor %}
+</div>
+{% endif %}
+
+<form method="post" action="/sheet/save" class="editor pin-form">
   <input type="hidden" name="slug" value="{{ sheet.slug }}">
 
   <div class="grid">
@@ -20,7 +36,28 @@
       <label>Training required
         <textarea name="training_required" rows="2">{{ sheet.training_required }}</textarea>
       </label>
-      {# TODO(roadmap #2): repeatable Software Links / Manual Links inputs. #}
+
+      {% set link_groups = [
+        ("sw", "Software links", sheet.software_links),
+        ("man", "Manual links", sheet.manual_links)] %}
+      {% for prefix, legend, links in link_groups %}
+      <fieldset class="links">
+        <legend>{{ legend }}</legend>
+        <div class="link-rows">
+          {% for l in links %}
+          <div class="link-row">
+            <input name="{{ prefix }}_label" placeholder="label" value="{{ l.label }}">
+            <input name="{{ prefix }}_url" placeholder="https://…" value="{{ l.url }}">
+          </div>
+          {% endfor %}
+          <div class="link-row">
+            <input name="{{ prefix }}_label" placeholder="label">
+            <input name="{{ prefix }}_url" placeholder="https://…">
+          </div>
+        </div>
+        <button type="button" class="add-row">+ add link</button>
+      </fieldset>
+      {% endfor %}
 
       <label>Procedure / checklist (Markdown)
         <textarea name="body" rows="16" id="body">{{ sheet.body }}</textarea>
@@ -28,20 +65,35 @@
     </div>
 
     <div class="preview-pane">
-      {# TODO(roadmap #4): live client-side render inside this Letter-ratio box
-         with an "Overflows one page!" warning. Vendor marked.js into static/. #}
-      <div class="letter-box">
-        <p class="muted">Live single-page preview lands here (roadmap #4).</p>
+      <div id="overflow-warn" class="overflow-warn">⚠️ Overflows one {{ page.css_size }} page — trim to fit.</div>
+      <p class="muted preview-cap">Live preview ({{ page.css_size }}) — the server makes the final, exact check.</p>
+      <div class="page-preview" style="aspect-ratio: {{ page.aspect }};">
+        <div class="pp-head"><span id="preview-title">{{ sheet.machine or "Machine name" }}</span></div>
+        <div id="preview-body" class="pp-body"></div>
+        <div class="pp-foot">LOG · lantern · EDIT</div>
       </div>
     </div>
   </div>
 
   <div class="save-row">
     <label>Your name <input name="author" placeholder="who's editing?"></label>
-    {% if pin_enabled %}<label>Space PIN <input name="pin" type="password"></label>{% endif %}
     <button type="submit">Save (new revision)</button>
     {% if not is_new %}<a href="/sheet/{{ slug }}/pdf">View PDF</a>
+    <a href="/sheet/{{ slug }}/logs">Usage log</a>
     <a href="/sheet/{{ slug }}/history">History</a>{% endif %}
   </div>
 </form>
+
+<script>
+  // "+ add link" clones the last row in its group and clears it.
+  document.querySelectorAll(".add-row").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var rows = btn.previousElementSibling;          // .link-rows
+      var last = rows.lastElementChild;
+      var copy = last.cloneNode(true);
+      copy.querySelectorAll("input").forEach(function (i) { i.value = ""; });
+      rows.appendChild(copy);
+    });
+  });
+</script>
 {% endblock %}

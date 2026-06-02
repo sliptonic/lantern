@@ -24,12 +24,39 @@
       <td class="actions">
         <a href="/sheet/{{ s.slug }}/edit">Edit</a>
         <a href="/sheet/{{ s.slug }}/pdf">PDF</a>
+        <a href="/sheet/{{ s.slug }}/logs">Log</a>
         <a href="/sheet/{{ s.slug }}/history">History</a>
+        <form method="post" action="/sheet/{{ s.slug }}/archive" class="inline pin-form"
+              onsubmit="return confirm('Retire {{ s.machine or s.slug }}? It will be hidden from the dashboard and queue (history kept).')">
+          <button type="submit">Archive</button>
+        </form>
       </td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
+{% endif %}
+
+{% if archived %}
+<details class="archived">
+  <summary>Archived machines ({{ archived|length }})</summary>
+  <table class="sheets">
+    <tbody>
+      {% for s in archived %}
+      <tr>
+        <td><strong>{{ s.machine or s.slug }}</strong> <span class="muted">{{ s.slug }}</span></td>
+        <td class="actions">
+          <a href="/sheet/{{ s.slug }}/pdf">PDF</a>
+          <a href="/sheet/{{ s.slug }}/history">History</a>
+          <form method="post" action="/sheet/{{ s.slug }}/unarchive" class="inline pin-form">
+            <button type="submit">Unarchive</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</details>
 {% endif %}
 
 <div class="cols">

@@ -5,13 +5,23 @@ from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from starlette.concurrency import run_in_threadpool
 
-from .. import branding, content, pdf, qr, sheet_templates, state
+from .. import branding, content, pagesize, pdf, qr, seed, sheet_templates, state
 from ..config import get_settings
-from ..models import Contact, Sheet
+from ..models import Contact, Link, Sheet
 from ..security import require_pin
 from ..templating import base_context, render
 
 router = APIRouter()
+
+
+def _links(labels: list[str], urls: list[str]) -> list[Link]:
+    """Pair up parallel label/url form fields into Links, dropping blank rows."""
+    out = []
+    for label, url in zip(labels, urls):
+        label, url = label.strip(), url.strip()
+        if url:
+            out.append(Link(label=label or url, url=url))
+    return out
 
 
 def _gather(slug: str) -> dict:
@@ -31,9 +41,11 @@ def _gather(slug: str) -> dict:
 
 @router.get("/", response_class=HTMLResponse)
 def dashboard(request: Request):
-    rows = [_gather(s) for s in content.list_slugs()]
+    archived = state.archived_slugs()
+    active = [s for s in content.list_slugs() if s not in archived]
     ctx = base_context(request) | {
-        "sheets": rows,
+        "sheets": [_gather(s) for s in active],
+        "archived": [_gather(s) for s in sorted(archived) if content.exists(s)],
         "queue": state.print_queue(),
         "activity": state.recent_log(15),
     }
@@ -42,14 +54,33 @@ def dashboard(request: Request):
 
 @router.get("/sheet/{slug}/edit", response_class=HTMLResponse)
 def edit_form(request: Request, slug: str):
+    exists = content.exists(slug)
     sheet = content.load(slug) or Sheet(slug=slug, machine="")
-    ctx = base_context(request) | {"sheet": sheet, "slug": slug, "is_new": not content.exists(slug)}
+    ctx = base_context(request) | {
+        "sheet": sheet, "slug": slug, "is_new": not exists,
+        "page": pagesize.resolve(),
+        "overflowing": bool(state.get_state(slug).get("overflowing")) if exists else False,
+    }
     return render("sheet_edit.html", ctx)
 
 
 @router.get("/new", response_class=HTMLResponse)
-def new_form(request: Request):
-    ctx = base_context(request) | {"sheet": Sheet(slug="", machine=""), "slug": "", "is_new": True}
+def new_form(request: Request, start: str = ""):
+    # Optionally start from a built-in sample (prefilled content; new slug).
+    sample = seed.get_sample(start) if start else None
+    if sample is not None:
+        sheet = Sheet(
+            slug="", machine=sample.machine, contact=sample.contact,
+            software_links=list(sample.software_links), manual_links=list(sample.manual_links),
+            training_required=sample.training_required, body=sample.body,
+        )
+    else:
+        sheet = Sheet(slug="", machine="")
+    ctx = base_context(request) | {
+        "sheet": sheet, "slug": "", "is_new": True,
+        "page": pagesize.resolve(), "overflowing": False,
+        "samples": seed.SAMPLES, "start": start,
+    }
     return render("sheet_edit.html", ctx)
 
 
@@ -64,6 +95,10 @@ async def save_sheet(
     contact_info: str = Form(""),
     training_required: str = Form(""),
     body: str = Form(""),
+    sw_label: list[str] = Form(default=[]),
+    sw_url: list[str] = Form(default=[]),
+    man_label: list[str] = Form(default=[]),
+    man_url: list[str] = Form(default=[]),
 ):
     require_pin(pin)
     slug = slug.strip() or content.slugify(machine)
@@ -71,6 +106,8 @@ async def save_sheet(
         slug=slug,
         machine=machine.strip(),
         contact=Contact(name=contact_name.strip(), info=contact_info.strip()),
+        software_links=_links(sw_label, sw_url),
+        manual_links=_links(man_label, man_url),
         training_required=training_required.strip(),
         body=body,
     )
@@ -93,6 +130,24 @@ def history(request: Request, slug: str):
         raise HTTPException(404)
     ctx = base_context(request) | {"slug": slug, "revisions": content.history(slug)}
     return render("history.html", ctx)
+
+
+@router.post("/sheet/{slug}/archive")
+def archive(slug: str, pin: str = Form("")):
+    """Retire a machine: hide it from the dashboard and queue. Content/history
+    are preserved; logging still works. Reversible via unarchive."""
+    require_pin(pin)
+    if not content.exists(slug):
+        raise HTTPException(404)
+    state.archive(slug)
+    return RedirectResponse("/", status_code=303)
+
+
+@router.post("/sheet/{slug}/unarchive")
+def unarchive(slug: str, pin: str = Form("")):
+    require_pin(pin)
+    state.unarchive(slug)
+    return RedirectResponse("/", status_code=303)
 
 
 @router.post("/sheet/{slug}/revert")
@@ -143,10 +198,11 @@ def _build_html(slug: str, template: str | None = None) -> str:
         "brand_mark": branding.brand_mark_data_uri(),
         "repo_url": repo_url,
         "repo_url_display": repo_url.split("://", 1)[-1],
+        "page": pagesize.resolve(),
     }
     return sheet_templates.render(template or sheet_templates.get_active(), ctx)
 
 
 def _render(slug: str, template: str | None = None) -> pdf.RenderResult:
-    """Build the Template HTML for a Sheet and render it to a Letter PDF."""
-    return pdf.render_pdf(_build_html(slug, template))
+    """Build the Template HTML for a Sheet and render it to a PDF."""
+    return pdf.render_pdf(_build_html(slug, template), page_format=pagesize.resolve()["format"])

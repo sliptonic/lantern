@@ -14,10 +14,9 @@
       <td>{{ r.message }} <span class="muted">{{ r.commit[:8] }}</span></td>
       <td>
         {% if not loop.first %}
-        <form method="post" action="/sheet/{{ slug }}/revert" class="inline">
+        <form method="post" action="/sheet/{{ slug }}/revert" class="inline pin-form">
           <input type="hidden" name="commit" value="{{ r.commit }}">
           <input name="author" placeholder="your name" size="10">
-          {% if pin_enabled %}<input name="pin" type="password" placeholder="PIN" size="6">{% endif %}
           <button type="submit">Revert to this</button>
         </form>
         {% else %}<span class="muted">current</span>{% endif %}

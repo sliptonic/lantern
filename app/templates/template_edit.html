@@ -8,7 +8,7 @@
 same name that shadows the built-in (the built-in is never modified).</p>
 {% endif %}
 
-<form method="post" action="/settings/template/save" class="template-editor">
+<form method="post" action="/settings/template/save" class="template-editor pin-form">
   <div class="grid">
     <div class="fields">
       <label>Template name (lowercase, digits, hyphens)
@@ -21,7 +21,6 @@ same name that shadows the built-in (the built-in is never modified).</p>
       </label>
       <div class="save-row">
         <label>Your name <input name="author" placeholder="optional"></label>
-        {% if pin_enabled %}<label>Space PIN <input name="pin" type="password"></label>{% endif %}
         <button type="submit">Save template</button>
         <a href="/settings">Cancel</a>
       </div>

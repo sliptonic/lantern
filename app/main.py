@@ -1,6 +1,7 @@
 """Lantern FastAPI application entrypoint."""
 from __future__ import annotations
 
+import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -11,7 +12,10 @@ from .config import get_settings
 from .content import _repo  # ensures content repo exists on startup
 from .db import init_db
 from .routes import admin, queue, sheets, usage
+from .security import DEFAULT_PIN, pin_is_default
 from .seed import seed_if_empty
+
+log = logging.getLogger("lantern")
 
 
 @asynccontextmanager
@@ -22,6 +26,12 @@ async def lifespan(app: FastAPI):
     # First-run sample sheets so the app isn't empty on a fresh install.
     if get_settings().seed_samples:
         seed_if_empty()
+    if pin_is_default():
+        log.warning(
+            "SECURITY: the Space PIN is still the default %r. Anyone who can read "
+            "the code can edit sheets. Set EDIT_PIN to a real value (or PIN_ENABLED=0 "
+            "to intentionally run open).", DEFAULT_PIN,
+        )
     yield
 
 

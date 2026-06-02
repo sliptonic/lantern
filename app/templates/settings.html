@@ -3,56 +3,103 @@
 {% block content %}
 <h1>Settings</h1>
 
-<section>
-  <h2>Branding — Logo</h2>
-  <p class="muted">{{ "A logo is set." if has_logo else "No logo uploaded yet." }}</p>
-  <form method="post" action="/settings/logo" enctype="multipart/form-data" class="log">
-    <label>Logo image <input type="file" name="logo" accept="image/*" required></label>
-    {% if pin_enabled %}<label>Space PIN <input name="pin" type="password"></label>{% endif %}
-    <button type="submit">Upload</button>
-  </form>
-</section>
-
-<section>
-  <h2>Sheet Template</h2>
-  <p class="muted">The layout every Info-Sheet is rendered through. Choose one, or create your own.</p>
-
-  <form method="post" action="/settings/template/active" class="template-pick">
-    <table class="sheets">
-      <thead><tr><th></th><th>Template</th><th>Type</th><th></th></tr></thead>
-      <tbody>
-        {% for t in templates %}
-        <tr>
-          <td><input type="radio" name="name" value="{{ t.name }}" {{ "checked" if t.is_active }}></td>
-          <td><strong>{{ t.name }}</strong>{% if t.is_active %} <span class="badge ok">active</span>{% endif %}</td>
-          <td>{{ t.origin }}</td>
-          <td class="actions">
-            {% if sample_slug %}<a href="/sheet/{{ sample_slug }}/pdf?template={{ t.name }}" target="_blank">Preview</a>{% endif %}
-            <a href="/settings/template/{{ t.name }}/edit">{{ "Edit" if t.origin == "custom" else "Customize" }}</a>
-            {% if t.origin == "custom" %}
-            <form method="post" action="/settings/template/{{ t.name }}/delete" class="inline"
-                  onsubmit="return confirm('Delete custom template {{ t.name }}?')">
-              {% if pin_enabled %}<input name="pin" type="password" placeholder="PIN" size="6">{% endif %}
-              <button type="submit">Delete</button>
-            </form>
-            {% endif %}
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    <div class="save-row">
-      {% if pin_enabled %}<label>Space PIN <input name="pin" type="password"></label>{% endif %}
-      <button type="submit">Set active template</button>
-      <a href="/settings/template/new">+ New template</a>
+<form method="post" action="/settings" enctype="multipart/form-data" class="pin-form settings-form">
+  <section>
+    <h2>Branding — Logo</h2>
+    <div class="logo-settings">
+      <div class="logo-current">
+        <div class="label">Current</div>
+        <img id="logo-current" src="/logo" alt=""
+             onerror="this.hidden=true; document.getElementById('logo-none').hidden=false;">
+        <span id="logo-none" class="muted" hidden>None yet</span>
+      </div>
+      <div class="logo-pick">
+        <label>Upload a new logo
+          <input type="file" name="logo" accept="image/*" id="logo-input">
+        </label>
+        <div class="logo-preview-wrap" id="logo-preview-wrap" hidden>
+          <div class="label">New (preview)</div>
+          <img id="logo-preview" alt="">
+        </div>
+      </div>
     </div>
-  </form>
+  </section>
+
+  <section>
+    <h2>Sheet Template</h2>
+    <p class="muted">The layout every Info-Sheet is rendered through.</p>
+    <label>Active template
+      <select name="active_template">
+        {% for t in templates %}
+        <option value="{{ t.name }}" {{ "selected" if t.is_active }}>{{ t.name }} ({{ t.origin }})</option>
+        {% endfor %}
+      </select>
+    </label>
+  </section>
+
+  <section>
+    <h2>Page Size</h2>
+    <p class="muted">The paper size every sheet is rendered and printed at.</p>
+    {% for p in page_sizes %}
+    <label class="inline-radio">
+      <input type="radio" name="page_size" value="{{ p.key }}" {{ "checked" if p.active }}>
+      {{ p.label }}
+    </label>
+    {% endfor %}
+  </section>
+
+  <div class="save-row">
+    <button type="submit">Save settings</button>
+  </div>
+</form>
+
+<section>
+  <h2>Manage templates</h2>
+  <p class="muted">Preview, customize, or create templates. Custom templates persist and can be deleted.</p>
+  <table class="sheets">
+    <thead><tr><th>Template</th><th>Type</th><th></th></tr></thead>
+    <tbody>
+      {% for t in templates %}
+      <tr>
+        <td><strong>{{ t.name }}</strong>{% if t.is_active %} <span class="badge ok">active</span>{% endif %}</td>
+        <td>{{ t.origin }}</td>
+        <td class="actions">
+          {% if sample_slug %}<a href="/sheet/{{ sample_slug }}/pdf?template={{ t.name }}" target="_blank">Preview</a>{% endif %}
+          <a href="/settings/template/{{ t.name }}/edit">{{ "Edit" if t.origin == "custom" else "Customize" }}</a>
+          {% if t.origin == "custom" %}
+          <form method="post" action="/settings/template/{{ t.name }}/delete" class="inline pin-form"
+                onsubmit="return confirm('Delete custom template {{ t.name }}?')">
+            <button type="submit">Delete</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <a href="/settings/template/new">+ New template</a>
 </section>
 
 <section>
   <h2>Configuration</h2>
   <p>Base URL (for QR codes): <code>{{ base_url }}</code></p>
   <p>PIN gate: <strong>{{ "enabled" if pin_enabled else "disabled" }}</strong></p>
-  <p class="muted">Set via environment (BASE_URL, EDIT_PIN, PIN_ENABLED, REPO_URL). See .env.example.</p>
+  <p class="muted">Set via environment (BASE_URL, EDIT_PIN, PIN_ENABLED, PAGE_SIZE, REPO_URL). See .env.example.</p>
 </section>
+
+<script>
+  // Live preview of a newly-selected logo before saving.
+  var input = document.getElementById("logo-input");
+  if (input) input.addEventListener("change", function () {
+    var f = input.files && input.files[0];
+    var wrap = document.getElementById("logo-preview-wrap");
+    if (!f) { wrap.hidden = true; return; }
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      document.getElementById("logo-preview").src = e.target.result;
+      wrap.hidden = false;
+    };
+    reader.readAsDataURL(f);
+  });
+</script>
 {% endblock %}

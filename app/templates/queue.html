@@ -2,11 +2,18 @@
 {% block title %}Print Queue — Lantern{% endblock %}
 {% block content %}
 <h1>Print Queue</h1>
-<p class="muted">Open each PDF, print it on US Letter, then mark it printed.</p>
+<p class="muted">Open each PDF and print it, then mark it printed — or print the whole queue at once.</p>
 
 {% if not queue %}
   <p class="ok-msg">Nothing to print. 🎉</p>
 {% else %}
+<div class="save-row">
+  <a href="/queue/print-all.pdf" target="_blank"><strong>Print all ({{ queue|length }})</strong></a>
+  <form method="post" action="/queue/printed-all" class="inline"
+        onsubmit="return confirm('Mark all {{ queue|length }} sheets as printed?')">
+    <button type="submit">Mark all printed</button>
+  </form>
+</div>
 <table class="sheets">
   <thead><tr><th>Machine</th><th></th></tr></thead>
   <tbody>

@@ -35,6 +35,13 @@ CREATE TABLE IF NOT EXISTS settings (
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL
 );
+
+-- Retired machines: hidden from the dashboard + print queue; content/history
+-- in git are untouched. Presence of a row = archived.
+CREATE TABLE IF NOT EXISTS archived_sheets (
+    slug        TEXT PRIMARY KEY,
+    archived_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 """
 
 

@@ -6,6 +6,8 @@
   <title>{% block title %}Lantern{% endblock %}</title>
   <link rel="stylesheet" href="/static/style.css">
   <link rel="icon" type="image/png" href="/static/favicon.png">
+  <script>window.LANTERN_PIN_ENABLED = {{ pin_enabled | tojson }};</script>
+  <script src="/static/pin.js"></script>
   {% block head %}{% endblock %}
 </head>
 <body>
@@ -18,8 +20,16 @@
       <a href="/settings">Settings</a>
     </nav>
   </header>
+  {% if insecure_pin %}
+  <div class="warn-bar">⚠️ The PIN is still the default <code>changeme</code>.
+    Set <code>EDIT_PIN</code> to a real value before going live.</div>
+  {% endif %}
   <main>
     {% block content %}{% endblock %}
   </main>
+  <footer class="site-foot">
+    <img src="/static/lantern-mark.png" alt="" class="foot-mark">
+    <span>Lantern · <a href="{{ repo_url }}" target="_blank" rel="noopener">{{ repo_url_display }}</a></span>
+  </footer>
 </body>
 </html>
