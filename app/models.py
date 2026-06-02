@@ -11,13 +11,6 @@ ROW_QR = "qr"
 
 
 @dataclass
-class Link:
-    """A labelled URL — used for Software Links and Manual Links."""
-    label: str
-    url: str
-
-
-@dataclass
 class Contact:
     """The person responsible for the subject of a sheet."""
     name: str = ""
@@ -58,8 +51,6 @@ class Sheet:
     slug: str
     title: str
     contact: Contact = field(default_factory=Contact)
-    software_links: list[Link] = field(default_factory=list)
-    manual_links: list[Link] = field(default_factory=list)
     requirements: str = ""
     rows: list[BodyRow] = field(default_factory=list)
 
@@ -69,8 +60,6 @@ class Sheet:
             "slug": self.slug,
             "title": self.title,
             "contact": {"name": self.contact.name, "info": self.contact.info},
-            "software_links": [{"label": lk.label, "url": lk.url} for lk in self.software_links],
-            "manual_links": [{"label": lk.label, "url": lk.url} for lk in self.manual_links],
             "requirements": self.requirements,
             "rows": [r.as_dict() for r in self.rows],
         }
@@ -90,8 +79,6 @@ class Sheet:
             # `machine` and `training_required` are the legacy field names.
             title=meta.get("title") or meta.get("machine") or meta["slug"],
             contact=Contact(name=contact.get("name", ""), info=contact.get("info", "")),
-            software_links=[Link(**lk) for lk in (meta.get("software_links") or [])],
-            manual_links=[Link(**lk) for lk in (meta.get("manual_links") or [])],
             requirements=meta.get("requirements") or meta.get("training_required", ""),
             rows=rows,
         )

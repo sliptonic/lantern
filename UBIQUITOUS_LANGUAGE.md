@@ -25,7 +25,7 @@ Drives the filename (`<slug>.md`), all routes, and both QR targets.
 
 **Structured Fields**
 The known, typed fields in a Sheet's frontmatter, rendered into fixed zones of
-the Template: Title, Contact, Software Links, Manual Links, Requirements.
+the Template: Title, Contact, Requirements.
 
 **Body**
 The main content of a Sheet — a two-column grid of **Body Rows**.
@@ -51,10 +51,6 @@ Field: a name plus free text info (email, phone, hours).
 **Requirements**
 A Structured Field stating what training, sign-off, or prerequisites apply
 before using the subject. Informational text.
-
-**Software Link / Manual Link**
-Structured Fields: labelled URLs for downloadable software and for manuals.
-Rendered as a list on the Sheet.
 
 ---
 

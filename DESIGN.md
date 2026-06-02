@@ -55,8 +55,6 @@ YAML frontmatter; the file body is unused (content lives in `rows`):
 slug: laser-cutter          # stable id; drives URLs + QR codes; never changes
 title: "Laser cutter"
 contact: { name: "Dana Kim", info: "dana@example.org" }
-software_links: [{ label: "Inkscape", url: "https://inkscape.org/" }]
-manual_links:   [{ label: "Manual",   url: "https://…" }]
 requirements: "Safety course + sign-off"
 rows:                       # the two-column body grid
   - { left: "## Cutting\n1. …", kind: none,  value: "" }

@@ -8,21 +8,11 @@ from starlette.concurrency import run_in_threadpool
 
 from .. import branding, content, images, pagesize, pdf, qr, seed, sheet_templates, state
 from ..config import get_settings
-from ..models import BodyRow, Contact, Link, Sheet
+from ..models import BodyRow, Contact, Sheet
 from ..security import require_pin
 from ..templating import base_context, render
 
 router = APIRouter()
-
-
-def _links(labels: list[str], urls: list[str]) -> list[Link]:
-    """Pair up parallel label/url form fields into Links, dropping blank rows."""
-    out = []
-    for label, url in zip(labels, urls):
-        label, url = label.strip(), url.strip()
-        if url:
-            out.append(Link(label=label or url, url=url))
-    return out
 
 
 def _rows(lefts: list[str], kinds: list[str], values: list[str]) -> list[BodyRow]:
@@ -88,7 +78,6 @@ def new_form(request: Request, start: str = ""):
     if sample is not None:
         sheet = Sheet(
             slug="", title=sample.title, contact=sample.contact,
-            software_links=list(sample.software_links), manual_links=list(sample.manual_links),
             requirements=sample.requirements, rows=list(sample.rows),
         )
     else:
@@ -111,10 +100,6 @@ def preview_sheet(
     row_left: list[str] = Form(default=[]),
     row_kind: list[str] = Form(default=[]),
     row_value: list[str] = Form(default=[]),
-    sw_label: list[str] = Form(default=[]),
-    sw_url: list[str] = Form(default=[]),
-    man_label: list[str] = Form(default=[]),
-    man_url: list[str] = Form(default=[]),
 ):
     """Render the editor's live preview: the *actual* print template applied to
     the in-progress (unsaved) form data. The editor shows this in an iframe so
@@ -126,8 +111,6 @@ def preview_sheet(
         slug=slug,
         title=title.strip() or "Untitled",
         contact=Contact(name=contact_name.strip(), info=contact_info.strip()),
-        software_links=_links(sw_label, sw_url),
-        manual_links=_links(man_label, man_url),
         requirements=requirements.strip(),
         rows=_rows(row_left, row_kind, row_value),
     )
@@ -147,10 +130,6 @@ async def save_sheet(
     row_left: list[str] = Form(default=[]),
     row_kind: list[str] = Form(default=[]),
     row_value: list[str] = Form(default=[]),
-    sw_label: list[str] = Form(default=[]),
-    sw_url: list[str] = Form(default=[]),
-    man_label: list[str] = Form(default=[]),
-    man_url: list[str] = Form(default=[]),
 ):
     require_pin(pin)
     slug = slug.strip() or content.slugify(title)
@@ -158,8 +137,6 @@ async def save_sheet(
         slug=slug,
         title=title.strip(),
         contact=Contact(name=contact_name.strip(), info=contact_info.strip()),
-        software_links=_links(sw_label, sw_url),
-        manual_links=_links(man_label, man_url),
         requirements=requirements.strip(),
         rows=_rows(row_left, row_kind, row_value),
     )

@@ -56,9 +56,9 @@ Each sheet is one page (US Letter or A4) with a uniform, logo-branded layout:
 - A title and your logo
 - A contact and how to reach them
 - Requirements / prerequisites
-- Links (software, manuals, anything)
 - A two-column **body grid**: the left column is Markdown; the right column is
-  an image or a URL rendered as a QR code (e.g. a how-to video)
+  an image or a URL rendered as a QR code (e.g. a how-to video). Links to
+  software, manuals, or videos go here — as scannable QR codes
 - Two footer QR codes: **Log use** and **Edit**
 
 Lantern enforces the single page: if an edit makes a sheet too long, it's

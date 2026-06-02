@@ -8,7 +8,7 @@ logging, and printing work. Seeding is skipped once any sheet exists.
 from __future__ import annotations
 
 from . import content, state
-from .models import BodyRow, Contact, Link, Sheet
+from .models import BodyRow, Contact, Sheet
 
 SAMPLES = [
     Sheet(
@@ -16,8 +16,6 @@ SAMPLES = [
         title="Prusa MK4 3D Printer",
         contact=Contact(name="Sam Rivera", info="sam@example.org · Tue/Thu evenings"),
         requirements="Intro to FDM printing (30 min) + sign-off",
-        software_links=[Link(label="PrusaSlicer", url="https://www.prusa3d.com/prusaslicer/")],
-        manual_links=[Link(label="MK4 Handbook (PDF)", url="https://help.prusa3d.com/")],
         rows=[
             BodyRow(left="""## Before you start
 - Check the **build plate is clean** — wipe with IPA if greasy.
@@ -47,8 +45,6 @@ SAMPLES = [
         title="Epilog Laser Cutter",
         contact=Contact(name="Dana Kim", info="dana@example.org · weekends"),
         requirements="Safety course + supervised first cut. NO untrained use.",
-        software_links=[Link(label="Inkscape", url="https://inkscape.org/")],
-        manual_links=[Link(label="Epilog Manual", url="https://www.epiloglaser.com/")],
         rows=[
             BodyRow(left="""## Safety first
 - **Know your material.** Only cut approved materials (see the posted list).

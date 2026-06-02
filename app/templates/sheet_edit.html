@@ -61,28 +61,6 @@
         <textarea name="requirements" rows="2">{{ sheet.requirements }}</textarea>
       </label>
 
-      {% set link_groups = [
-        ("sw", "Software links", sheet.software_links),
-        ("man", "Manual links", sheet.manual_links)] %}
-      {% for prefix, legend, links in link_groups %}
-      <fieldset class="links">
-        <legend>{{ legend }}</legend>
-        <div class="link-rows">
-          {% for l in links %}
-          <div class="link-row">
-            <input name="{{ prefix }}_label" placeholder="label" value="{{ l.label }}">
-            <input name="{{ prefix }}_url" placeholder="https://…" value="{{ l.url }}">
-          </div>
-          {% endfor %}
-          <div class="link-row">
-            <input name="{{ prefix }}_label" placeholder="label">
-            <input name="{{ prefix }}_url" placeholder="https://…">
-          </div>
-        </div>
-        <button type="button" class="add-row">+ add link</button>
-      </fieldset>
-      {% endfor %}
-
       <fieldset class="body-section">
         <legend>Body — two-column grid</legend>
         <p class="muted">Each row: <strong>left</strong> is Markdown; <strong>right</strong> is nothing,
@@ -118,16 +96,4 @@
 </form>
 
 <template id="row-tpl">{{ body_row({"left": "", "kind": "none", "value": ""}) }}</template>
-
-<script>
-  // "+ add link" clones the last row in its group and clears it.
-  document.querySelectorAll(".add-row").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      var rows = btn.previousElementSibling;          // .link-rows
-      var copy = rows.lastElementChild.cloneNode(true);
-      copy.querySelectorAll("input").forEach(function (i) { i.value = ""; });
-      rows.appendChild(copy);
-    });
-  });
-</script>
 {% endblock %}
