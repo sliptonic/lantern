@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Small persistent key/value settings backed by the SQLite `settings` table.
 
 Used for admin-tunable values that aren't environment config — e.g. the

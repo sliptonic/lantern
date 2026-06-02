@@ -1,4 +1,15 @@
-"""Lantern FastAPI application entrypoint."""
+# SPDX-License-Identifier: AGPL-3.0-or-later
+"""Lantern FastAPI application entrypoint.
+
+Lantern — printable, always-current info sheets.
+Copyright (C) 2026 sliptonic and Lantern contributors.
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Affero General Public License as published by the Free
+Software Foundation, either version 3 of the License, or (at your option) any
+later version. This program is distributed WITHOUT ANY WARRANTY; see the GNU
+Affero General Public License (the LICENSE file) for details.
+"""
 from __future__ import annotations
 
 import logging

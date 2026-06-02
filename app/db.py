@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """SQLite store for event/state data: Usage Log + Print-Queue state.
 
 Document content (Sheets) lives in git, NOT here — see app/content.py.

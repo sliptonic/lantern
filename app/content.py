@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
 """Git-backed content store for Info-Sheets.
 
 Each Sheet is one markdown file with YAML frontmatter at

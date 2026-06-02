@@ -126,3 +126,15 @@ dev server runs without it and simply skips PDF generation.
 See [`DESIGN.md`](DESIGN.md) for the architecture, data model, and routes, and
 [`UBIQUITOUS_LANGUAGE.md`](UBIQUITOUS_LANGUAGE.md) for the project glossary (the
 terms used in the code and UI).
+
+## License
+
+Lantern is free software licensed under the **GNU Affero General Public License
+v3.0 or later** (AGPL-3.0-or-later) — see [`LICENSE`](LICENSE).
+
+The AGPL is deliberate: you're free to use, modify, and self-host Lantern, but
+if you run a modified version as a network service, you must offer your users
+the complete corresponding source under the same license. This keeps Lantern
+and any improvements to it open.
+
+Copyright (C) 2026 sliptonic and Lantern contributors.
