@@ -19,6 +19,8 @@ def base_context(request) -> dict:
         "base_url": settings.base_url,
         "pin_enabled": settings.pin_enabled,
         "insecure_pin": pin_is_default(),
+        "repo_url": settings.repo_url,
+        "repo_url_display": settings.repo_url.split("://", 1)[-1],
     }
 
 

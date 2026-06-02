@@ -9,7 +9,7 @@ from __future__ import annotations
 from . import content, state
 from .models import Contact, Link, Sheet
 
-_SAMPLES = [
+SAMPLES = [
     Sheet(
         slug="prusa-mk4-3d-printer",
         machine="Prusa MK4 3D Printer",
@@ -63,11 +63,16 @@ _SAMPLES = [
 ]
 
 
+def get_sample(slug: str) -> Sheet | None:
+    """A built-in sample by slug — used as a starting point for a new sheet."""
+    return next((s for s in SAMPLES if s.slug == slug), None)
+
+
 def seed_if_empty() -> int:
     """Create sample sheets if none exist. Returns the number created."""
     if content.list_slugs():
         return 0
-    for sheet in _SAMPLES:
+    for sheet in SAMPLES:
         content.save(sheet, author="Lantern", message=f"Seed sample: {sheet.slug}")
         state.mark_saved(sheet.slug, overflowing=False)
-    return len(_SAMPLES)
+    return len(SAMPLES)

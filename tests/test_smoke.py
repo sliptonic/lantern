@@ -78,8 +78,8 @@ def test_logo_embedded_in_sheet_when_present(client):
     # No uploaded logo yet (template-agnostic: assert on the data itself).
     assert branding.logo_data_uri() is None
 
-    # Upload a logo via Settings -> available as a base64 data URI.
-    r = client.post("/settings/logo", files={"logo": ("logo.png", _PNG_1x1, "image/png")})
+    # Upload a logo via the unified Settings save -> available as a base64 data URI.
+    r = client.post("/settings", files={"logo": ("logo.png", _PNG_1x1, "image/png")})
     assert r.status_code in (200, 303)
     assert get_settings().logo_path.exists()
 
@@ -115,7 +115,7 @@ def test_templates_list_switch_and_custom(client):
     assert "mine" in sheet_templates.custom_names()
     assert "CUSTOM Drill Press" in _build_html("drill-press", "mine")
 
-    client.post("/settings/template/active", data={"name": "mine"})
+    client.post("/settings", data={"active_template": "mine"})
     assert sheet_templates.get_active() == "mine"
 
     # Deleting the active custom template falls back to default.
@@ -144,6 +144,33 @@ def test_software_and_manual_links(client):
     assert "fusion.example" in html and "manual.example" in html
 
 
+def test_new_sheet_from_sample(client):
+    # The chooser offers the built-in samples on the New Sheet page.
+    page = client.get("/new").text
+    assert "Start from" in page and "Prusa MK4 3D Printer" in page
+
+    # Starting from a sample prefills the editor (machine, links, body).
+    pre = client.get("/new?start=prusa-mk4-3d-printer").text
+    assert "Prusa MK4 3D Printer" in pre
+    assert "PrusaSlicer" in pre
+    assert "build plate is clean" in pre
+
+
+def test_unified_settings_save(client):
+    from app import branding, pagesize, sheet_templates
+
+    client.post("/settings/template/save",
+                data={"name": "alt", "html": "<html>{{ sheet.machine }}</html>"})
+    # One save sets logo + active template + page size together.
+    r = client.post("/settings", data={"active_template": "alt", "page_size": "a4"},
+                    files={"logo": ("l.png", _PNG_1x1, "image/png")})
+    assert r.status_code in (200, 303)
+    assert sheet_templates.get_active() == "alt"
+    assert pagesize.get() == "a4"
+    assert branding.logo_data_uri() is not None
+    assert client.get("/logo").status_code == 200
+
+
 def test_page_size_switch(client):
     from app import pagesize
     from app.routes.sheets import _build_html
@@ -156,7 +183,7 @@ def test_page_size_switch(client):
     assert "size: Letter" in letter_html and "8.5in" in letter_html
 
     # Switch to A4 via Settings -> templates lay out at A4 geometry.
-    r = client.post("/settings/page-size", data={"page_size": "a4"})
+    r = client.post("/settings", data={"page_size": "a4"})
     assert r.status_code in (200, 303)
     assert pagesize.get() == "a4"
     a4_html = _build_html("bandsaw")

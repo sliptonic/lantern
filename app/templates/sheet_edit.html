@@ -9,7 +9,17 @@
   out of the print queue. Trim the procedure until the preview fits, then save again.</div>
 {% endif %}
 
-<form method="post" action="/sheet/save" class="editor">
+{% if is_new and samples %}
+<div class="start-from">
+  <span class="label">Start from:</span>
+  <a href="/new" class="chip {{ 'active' if not start }}">Blank</a>
+  {% for s in samples %}
+  <a href="/new?start={{ s.slug }}" class="chip {{ 'active' if start == s.slug }}">{{ s.machine }}</a>
+  {% endfor %}
+</div>
+{% endif %}
+
+<form method="post" action="/sheet/save" class="editor pin-form">
   <input type="hidden" name="slug" value="{{ sheet.slug }}">
 
   <div class="grid">
@@ -67,7 +77,6 @@
 
   <div class="save-row">
     <label>Your name <input name="author" placeholder="who's editing?"></label>
-    {% if pin_enabled %}<label>Space PIN <input name="pin" type="password"></label>{% endif %}
     <button type="submit">Save (new revision)</button>
     {% if not is_new %}<a href="/sheet/{{ slug }}/pdf">View PDF</a>
     <a href="/sheet/{{ slug }}/logs">Usage log</a>

@@ -26,9 +26,8 @@
         <a href="/sheet/{{ s.slug }}/pdf">PDF</a>
         <a href="/sheet/{{ s.slug }}/logs">Log</a>
         <a href="/sheet/{{ s.slug }}/history">History</a>
-        <form method="post" action="/sheet/{{ s.slug }}/archive" class="inline"
+        <form method="post" action="/sheet/{{ s.slug }}/archive" class="inline pin-form"
               onsubmit="return confirm('Retire {{ s.machine or s.slug }}? It will be hidden from the dashboard and queue (history kept).')">
-          {% if pin_enabled %}<input name="pin" type="password" placeholder="PIN" size="6">{% endif %}
           <button type="submit">Archive</button>
         </form>
       </td>
@@ -49,8 +48,7 @@
         <td class="actions">
           <a href="/sheet/{{ s.slug }}/pdf">PDF</a>
           <a href="/sheet/{{ s.slug }}/history">History</a>
-          <form method="post" action="/sheet/{{ s.slug }}/unarchive" class="inline">
-            {% if pin_enabled %}<input name="pin" type="password" placeholder="PIN" size="6">{% endif %}
+          <form method="post" action="/sheet/{{ s.slug }}/unarchive" class="inline pin-form">
             <button type="submit">Unarchive</button>
           </form>
         </td>

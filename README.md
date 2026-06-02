@@ -1,4 +1,8 @@
-<h1 align="center">🏮 Lantern</h1>
+<p align="center">
+  <img src="branding/lantern-source-2.png" alt="Lantern" width="120">
+</p>
+
+<h1 align="center">Lantern</h1>
 
 <p align="center"><em>Printable, always-current info sheets for every machine in your makerspace.</em></p>
 

@@ -5,7 +5,7 @@ from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from starlette.concurrency import run_in_threadpool
 
-from .. import branding, content, pagesize, pdf, qr, sheet_templates, state
+from .. import branding, content, pagesize, pdf, qr, seed, sheet_templates, state
 from ..config import get_settings
 from ..models import Contact, Link, Sheet
 from ..security import require_pin
@@ -65,10 +65,21 @@ def edit_form(request: Request, slug: str):
 
 
 @router.get("/new", response_class=HTMLResponse)
-def new_form(request: Request):
+def new_form(request: Request, start: str = ""):
+    # Optionally start from a built-in sample (prefilled content; new slug).
+    sample = seed.get_sample(start) if start else None
+    if sample is not None:
+        sheet = Sheet(
+            slug="", machine=sample.machine, contact=sample.contact,
+            software_links=list(sample.software_links), manual_links=list(sample.manual_links),
+            training_required=sample.training_required, body=sample.body,
+        )
+    else:
+        sheet = Sheet(slug="", machine="")
     ctx = base_context(request) | {
-        "sheet": Sheet(slug="", machine=""), "slug": "", "is_new": True,
+        "sheet": sheet, "slug": "", "is_new": True,
         "page": pagesize.resolve(), "overflowing": False,
+        "samples": seed.SAMPLES, "start": start,
     }
     return render("sheet_edit.html", ctx)
 

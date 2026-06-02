@@ -1,11 +1,10 @@
-"""Admin Settings routes: Logo upload, sheet-Template chooser & custom CRUD.
-
-All write actions are PIN-gated (the shared Space PIN).
+"""Admin Settings routes: unified settings save (logo + template + page size),
+plus sheet-Template create/edit/delete. All write actions are PIN-gated.
 """
 from __future__ import annotations
 
 from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 
 from .. import content, pagesize, sheet_templates
 from ..config import get_settings
@@ -29,30 +28,34 @@ def settings_page(request: Request):
     return render("settings.html", ctx)
 
 
-@router.post("/settings/page-size")
-def set_page_size(pin: str = Form(""), page_size: str = Form(...)):
-    require_pin(pin)
-    pagesize.set(page_size)
-    return RedirectResponse("/settings", status_code=303)
+@router.get("/logo")
+def current_logo():
+    """Serve the uploaded makerspace logo (for the Settings preview)."""
+    path = get_settings().logo_path
+    if not path.exists():
+        raise HTTPException(404)
+    return FileResponse(path)
 
 
-@router.post("/settings/logo")
-async def upload_logo(pin: str = Form(""), logo: UploadFile = File(...)):
+@router.post("/settings")
+async def save_settings(
+    pin: str = Form(""),
+    active_template: str = Form(""),
+    page_size: str = Form(""),
+    logo: UploadFile | None = File(None),
+):
+    """Unified settings save: optional logo upload + active template + page size."""
     require_pin(pin)
     settings = get_settings()
-    settings.data_dir.mkdir(parents=True, exist_ok=True)
-    settings.logo_path.write_bytes(await logo.read())
-    return RedirectResponse("/settings", status_code=303)
-
-
-# --- Sheet Templates -------------------------------------------------------
-
-@router.post("/settings/template/active")
-def set_active_template(pin: str = Form(""), name: str = Form(...)):
-    require_pin(pin)
-    if not sheet_templates.exists(name):
-        raise HTTPException(404, "Unknown template")
-    sheet_templates.set_active(name)
+    if logo is not None and logo.filename:
+        data = await logo.read()
+        if data:
+            settings.data_dir.mkdir(parents=True, exist_ok=True)
+            settings.logo_path.write_bytes(data)
+    if active_template and sheet_templates.exists(active_template):
+        sheet_templates.set_active(active_template)
+    if page_size:
+        pagesize.set(page_size)
     return RedirectResponse("/settings", status_code=303)
 
 
