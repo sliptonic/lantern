@@ -47,7 +47,7 @@ def _gather(slug: str) -> dict:
     revs = content.history(slug)
     return {
         "slug": slug,
-        "machine": sheet.machine if sheet else slug,
+        "title": sheet.title if sheet else slug,
         "dirty": bool(st.get("dirty")),
         "overflowing": bool(st.get("overflowing")),
         "last_logged": (state.recent_log(1, slug) or [{}])[0].get("created_at"),
@@ -71,7 +71,7 @@ def dashboard(request: Request):
 @router.get("/sheet/{slug}/edit", response_class=HTMLResponse)
 def edit_form(request: Request, slug: str):
     exists = content.exists(slug)
-    sheet = content.load(slug) or Sheet(slug=slug, machine="")
+    sheet = content.load(slug) or Sheet(slug=slug, title="")
     ctx = base_context(request) | {
         "sheet": sheet, "slug": slug, "is_new": not exists,
         "page": pagesize.resolve(),
@@ -86,12 +86,12 @@ def new_form(request: Request, start: str = ""):
     sample = seed.get_sample(start) if start else None
     if sample is not None:
         sheet = Sheet(
-            slug="", machine=sample.machine, contact=sample.contact,
+            slug="", title=sample.title, contact=sample.contact,
             software_links=list(sample.software_links), manual_links=list(sample.manual_links),
-            training_required=sample.training_required, rows=list(sample.rows),
+            requirements=sample.requirements, rows=list(sample.rows),
         )
     else:
-        sheet = Sheet(slug="", machine="")
+        sheet = Sheet(slug="", title="")
     ctx = base_context(request) | {
         "sheet": sheet, "slug": "", "is_new": True,
         "page": pagesize.resolve(), "overflowing": False,
@@ -103,13 +103,13 @@ def new_form(request: Request, start: str = ""):
 @router.post("/sheet/save")
 async def save_sheet(
     request: Request,
-    machine: str = Form(...),
+    title: str = Form(...),
     slug: str = Form(""),
     author: str = Form("anonymous"),
     pin: str = Form(""),
     contact_name: str = Form(""),
     contact_info: str = Form(""),
-    training_required: str = Form(""),
+    requirements: str = Form(""),
     row_left: list[str] = Form(default=[]),
     row_kind: list[str] = Form(default=[]),
     row_value: list[str] = Form(default=[]),
@@ -119,14 +119,14 @@ async def save_sheet(
     man_url: list[str] = Form(default=[]),
 ):
     require_pin(pin)
-    slug = slug.strip() or content.slugify(machine)
+    slug = slug.strip() or content.slugify(title)
     sheet = Sheet(
         slug=slug,
-        machine=machine.strip(),
+        title=title.strip(),
         contact=Contact(name=contact_name.strip(), info=contact_info.strip()),
         software_links=_links(sw_label, sw_url),
         manual_links=_links(man_label, man_url),
-        training_required=training_required.strip(),
+        requirements=requirements.strip(),
         rows=_rows(row_left, row_kind, row_value),
     )
     content.save(sheet, author=author)
@@ -152,7 +152,7 @@ def history(request: Request, slug: str):
 
 @router.post("/sheet/{slug}/archive")
 def archive(slug: str, pin: str = Form("")):
-    """Retire a machine: hide it from the dashboard and queue. Content/history
+    """Retire a sheet: hide it from the dashboard and queue. Content/history
     are preserved; logging still works. Reversible via unarchive."""
     require_pin(pin)
     if not content.exists(slug):

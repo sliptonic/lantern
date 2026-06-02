@@ -26,7 +26,7 @@
 {% endmacro %}
 
 {% block content %}
-<h1>{{ "New Info-Sheet" if is_new else "Edit: " + (sheet.machine or slug) }}</h1>
+<h1>{{ "New Info-Sheet" if is_new else "Edit: " + (sheet.title or slug) }}</h1>
 
 {% if overflowing %}
 <div class="overflow-banner">⚠️ This sheet is <strong>too long to fit one page</strong>, so it's held
@@ -38,7 +38,7 @@
   <span class="label">Start from:</span>
   <a href="/new" class="chip {{ 'active' if not start }}">Blank</a>
   {% for s in samples %}
-  <a href="/new?start={{ s.slug }}" class="chip {{ 'active' if start == s.slug }}">{{ s.machine }}</a>
+  <a href="/new?start={{ s.slug }}" class="chip {{ 'active' if start == s.slug }}">{{ s.title }}</a>
   {% endfor %}
 </div>
 {% endif %}
@@ -48,8 +48,9 @@
 
   <div class="grid">
     <div class="fields">
-      <label>Machine name
-        <input name="machine" value="{{ sheet.machine }}" required>
+      <label>Title
+        <input name="title" value="{{ sheet.title }}" required
+               placeholder="e.g. Laser cutter, Espresso machine, Server rack">
       </label>
       <label>Contact — name
         <input name="contact_name" value="{{ sheet.contact.name }}">
@@ -57,8 +58,8 @@
       <label>Contact — info (email / phone / hours)
         <input name="contact_info" value="{{ sheet.contact.info }}">
       </label>
-      <label>Training required
-        <textarea name="training_required" rows="2">{{ sheet.training_required }}</textarea>
+      <label>Requirements / prerequisites
+        <textarea name="requirements" rows="2">{{ sheet.requirements }}</textarea>
       </label>
 
       {% set link_groups = [
@@ -99,7 +100,7 @@
       <div id="overflow-warn" class="overflow-warn">⚠️ Overflows one {{ page.css_size }} page — trim to fit.</div>
       <p class="muted preview-cap">Live preview ({{ page.css_size }}) — the server makes the final, exact check.</p>
       <div class="page-preview" style="aspect-ratio: {{ page.aspect }};">
-        <div class="pp-head"><span id="preview-title">{{ sheet.machine or "Machine name" }}</span></div>
+        <div class="pp-head"><span id="preview-title">{{ sheet.title or "Title" }}</span></div>
         <div id="preview-body" class="pp-body"></div>
         <div class="pp-foot">LOG · lantern · EDIT</div>
       </div>

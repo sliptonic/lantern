@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI):
         seed_if_empty()
     if pin_is_default():
         log.warning(
-            "SECURITY: the Space PIN is still the default %r. Anyone who can read "
+            "SECURITY: the PIN is still the default %r. Anyone who can read "
             "the code can edit sheets. Set EDIT_PIN to a real value (or PIN_ENABLED=0 "
             "to intentionally run open).", DEFAULT_PIN,
         )

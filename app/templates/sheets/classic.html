@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 {# Lantern built-in sheet template: "classic".
-   Stacked header (logo + big title, then a contact/training meta row).
+   Stacked header (logo + big title, then a contact/requirements meta row).
    A roomier, more traditional look than "default". #}
 <head>
 <meta charset="utf-8">
@@ -52,15 +52,15 @@
 <body>
   <header class="sheet-head">
     {% if logo_data %}<img class="logo" src="{{ logo_data }}" alt="">{% endif %}
-    <h1>{{ sheet.machine }}</h1>
+    <h1>{{ sheet.title }}</h1>
   </header>
 
   <div class="meta">
     {% if sheet.contact.name %}
     <div><div class="label">Contact</div>{{ sheet.contact.name }}{% if sheet.contact.info %} — {{ sheet.contact.info }}{% endif %}</div>
     {% endif %}
-    {% if sheet.training_required %}
-    <div><div class="label">Training required</div>{{ sheet.training_required }}</div>
+    {% if sheet.requirements %}
+    <div><div class="label">Requirements</div>{{ sheet.requirements }}</div>
     {% endif %}
     {% if sheet.software_links %}
     <div><div class="label">Software</div>

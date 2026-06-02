@@ -19,7 +19,7 @@ def log_form(request: Request, slug: str):
     sheet = content.load(slug)
     if sheet is None:
         raise HTTPException(404)
-    ctx = base_context(request) | {"slug": slug, "machine": sheet.machine, "done": False}
+    ctx = base_context(request) | {"slug": slug, "title": sheet.title, "done": False}
     return render("log_form.html", ctx)
 
 
@@ -35,7 +35,7 @@ def submit_log(
         raise HTTPException(404)
     state.add_log_entry(slug, name=name, activity=activity, notes=notes)
     sheet = content.load(slug)
-    ctx = base_context(request) | {"slug": slug, "machine": sheet.machine, "done": True}
+    ctx = base_context(request) | {"slug": slug, "title": sheet.title, "done": True}
     return render("log_form.html", ctx)
 
 
@@ -45,7 +45,7 @@ def log_view(request: Request, slug: str):
     if sheet is None:
         raise HTTPException(404)
     ctx = base_context(request) | {
-        "slug": slug, "machine": sheet.machine, "entries": state.log_for(slug),
+        "slug": slug, "title": sheet.title, "entries": state.log_for(slug),
     }
     return render("usage_log.html", ctx)
 

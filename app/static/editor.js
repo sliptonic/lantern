@@ -96,7 +96,7 @@
     preview = document.getElementById("preview-body");
     warn = document.getElementById("overflow-warn");
     var title = document.getElementById("preview-title");
-    var machine = document.querySelector('input[name="machine"]');
+    var titleInput = document.querySelector('input[name="title"]');
 
     grid.querySelectorAll(".body-row").forEach(wireRow);
 
@@ -110,8 +110,8 @@
     });
 
     grid.addEventListener("input", renderPreview);
-    if (machine && title) machine.addEventListener("input", function () {
-      title.textContent = machine.value || "Machine name";
+    if (titleInput && title) titleInput.addEventListener("input", function () {
+      title.textContent = titleInput.value || "Title";
     });
     renderPreview();
   });

@@ -32,7 +32,7 @@ def recent_log(limit: int = 25, slug: str | None = None) -> list[dict]:
 
 
 def log_for(slug: str) -> list[dict]:
-    """Every Log Entry for a machine, newest first (for the log view + export)."""
+    """Every Log Entry for a sheet, newest first (for the log view + export)."""
     with connect() as conn:
         rows = conn.execute(
             "SELECT * FROM usage_log WHERE slug = ? ORDER BY id DESC", (slug,)

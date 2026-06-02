@@ -1,4 +1,4 @@
-"""Branding helpers — embedding the makerspace Logo into rendered Sheets.
+"""Branding helpers — embedding the uploaded logo into rendered Sheets.
 
 The Logo is uploaded once via admin Settings and stored at
 `DATA_DIR/logo.png`. Because the PDF is rendered from in-memory HTML (no web
@@ -13,7 +13,7 @@ from pathlib import Path
 from .config import get_settings
 
 # The Lantern project brand mark (vector), shown in the printed sheet footer.
-# Distinct from the makerspace Logo (uploaded via Settings, shown in the header).
+# Distinct from the uploaded logo (set in Settings, shown in the header).
 _BRAND_MARK = Path(__file__).parent / "static" / "lantern.svg"
 
 
@@ -34,7 +34,7 @@ def _sniff_mime(data: bytes) -> str:
 
 
 def logo_data_uri() -> str | None:
-    """Inline data URI for the uploaded makerspace Logo, or None if unset."""
+    """Inline data URI for the uploaded logo, or None if unset."""
     path = get_settings().logo_path
     if not path.exists():
         return None

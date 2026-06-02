@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-{% block title %}Usage log — {{ machine }}{% endblock %}
+{% block title %}Usage log — {{ title }}{% endblock %}
 {% block content %}
-<h1>Usage log: {{ machine }}</h1>
+<h1>Usage log: {{ title }}</h1>
 <p>
   <a href="/sheet/{{ slug }}/edit">← back to sheet</a>
   &nbsp;·&nbsp; <strong>{{ entries|length }}</strong> entr{{ "y" if entries|length == 1 else "ies" }}
@@ -9,7 +9,7 @@
 </p>
 
 {% if not entries %}
-  <p class="muted">No usage logged yet for this machine.</p>
+  <p class="muted">No usage logged yet for this sheet.</p>
 {% else %}
 <table class="sheets">
   <thead><tr><th>When</th><th>Who</th><th>Activity</th><th>Notes</th></tr></thead>

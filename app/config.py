@@ -1,7 +1,4 @@
-"""Runtime configuration, read from environment (see .env.example).
-
-Terms here follow UBIQUITOUS_LANGUAGE.md: Base URL, Space PIN, etc.
-"""
+"""Runtime configuration, read from environment (see .env.example)."""
 from __future__ import annotations
 
 import os

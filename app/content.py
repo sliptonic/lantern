@@ -19,7 +19,7 @@ _SLUG_RE = re.compile(r"[^a-z0-9]+")
 
 
 def slugify(text: str) -> str:
-    """Derive a stable, URL-safe Slug from a machine name."""
+    """Derive a stable, URL-safe Slug from a sheet title."""
     slug = _SLUG_RE.sub("-", text.strip().lower()).strip("-")
     return slug or "sheet"
 
