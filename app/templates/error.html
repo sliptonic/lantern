@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ status }} — Lantern{% endblock %}
+{% block content %}
+<div class="error-page">
+  <h1>{% if status == 403 %}🔒 Incorrect PIN{% elif status == 404 %}Not found{% else %}Something went wrong{% endif %}</h1>
+  <p>{{ detail or "Unexpected error." }}</p>
+  {% if status == 403 %}
+  <p class="muted">Go back and try again — you'll be prompted for the PIN.</p>
+  {% endif %}
+  <p class="error-actions">
+    <button type="button" onclick="history.back()">← Go back</button>
+    <a href="/">Dashboard</a>
+  </p>
+</div>
+{% endblock %}

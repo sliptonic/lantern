@@ -16,8 +16,10 @@ import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from . import baseurl
 from .config import get_settings
@@ -26,6 +28,7 @@ from .db import init_db
 from .routes import admin, queue, sheets, usage
 from .security import DEFAULT_PIN, pin_is_default
 from .seed import seed_if_empty
+from .templating import base_context, render
 
 log = logging.getLogger("lantern")
 
@@ -59,6 +62,16 @@ app.include_router(sheets.router)
 app.include_router(usage.router)
 app.include_router(queue.router)
 app.include_router(admin.router)
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    """Render 4xx/5xx as a friendly HTML page for browsers — a wrong PIN should
+    not dump raw JSON. Non-HTML clients (API/assets) still get JSON."""
+    if "text/html" in request.headers.get("accept", ""):
+        ctx = base_context(request) | {"status": exc.status_code, "detail": exc.detail}
+        return render("error.html", ctx, status_code=exc.status_code)
+    return JSONResponse({"detail": exc.detail}, status_code=exc.status_code)
 
 
 @app.get("/healthz")

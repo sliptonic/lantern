@@ -26,6 +26,6 @@ def base_context(request) -> dict:
     }
 
 
-def render(name: str, ctx: dict):
+def render(name: str, ctx: dict, status_code: int = 200):
     """Render a template using the current (request-first) Starlette API."""
-    return templates.TemplateResponse(ctx["request"], name, ctx)
+    return templates.TemplateResponse(ctx["request"], name, ctx, status_code=status_code)
