@@ -1,13 +1,13 @@
 """Sheet routes: Dashboard, view, Editor, create, history, Revert, PDF."""
 from __future__ import annotations
 
-from fastapi import APIRouter, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse, Response
+from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse, Response
 from starlette.concurrency import run_in_threadpool
 
-from .. import branding, content, pagesize, pdf, qr, seed, sheet_templates, state
+from .. import branding, content, images, pagesize, pdf, qr, seed, sheet_templates, state
 from ..config import get_settings
-from ..models import Contact, Link, Sheet
+from ..models import BodyRow, Contact, Link, Sheet
 from ..security import require_pin
 from ..templating import base_context, render
 
@@ -21,6 +21,22 @@ def _links(labels: list[str], urls: list[str]) -> list[Link]:
         label, url = label.strip(), url.strip()
         if url:
             out.append(Link(label=label or url, url=url))
+    return out
+
+
+def _rows(lefts: list[str], kinds: list[str], values: list[str]) -> list[BodyRow]:
+    """Build body rows from parallel form arrays; drop fully-empty rows.
+
+    Images were already uploaded (AJAX) and `value` carries the image token;
+    for qr, `value` is the URL.
+    """
+    out = []
+    for left, kind, value in zip(lefts, kinds, values):
+        left, kind, value = left.rstrip(), (kind or "none").strip(), value.strip()
+        if kind not in ("none", "image", "qr") or (kind != "none" and not value):
+            kind, value = "none", ""
+        if left or value:
+            out.append(BodyRow(left=left, kind=kind, value=value))
     return out
 
 
@@ -72,7 +88,7 @@ def new_form(request: Request, start: str = ""):
         sheet = Sheet(
             slug="", machine=sample.machine, contact=sample.contact,
             software_links=list(sample.software_links), manual_links=list(sample.manual_links),
-            training_required=sample.training_required, body=sample.body,
+            training_required=sample.training_required, rows=list(sample.rows),
         )
     else:
         sheet = Sheet(slug="", machine="")
@@ -94,7 +110,9 @@ async def save_sheet(
     contact_name: str = Form(""),
     contact_info: str = Form(""),
     training_required: str = Form(""),
-    body: str = Form(""),
+    row_left: list[str] = Form(default=[]),
+    row_kind: list[str] = Form(default=[]),
+    row_value: list[str] = Form(default=[]),
     sw_label: list[str] = Form(default=[]),
     sw_url: list[str] = Form(default=[]),
     man_label: list[str] = Form(default=[]),
@@ -109,7 +127,7 @@ async def save_sheet(
         software_links=_links(sw_label, sw_url),
         manual_links=_links(man_label, man_url),
         training_required=training_required.strip(),
-        body=body,
+        rows=_rows(row_left, row_kind, row_value),
     )
     content.save(sheet, author=author)
 
@@ -163,6 +181,29 @@ async def revert(slug: str, commit: str = Form(...), author: str = Form("anonymo
     return RedirectResponse(f"/sheet/{slug}/history", status_code=303)
 
 
+# --- Body images (flat pool, decoupled from slug) --------------------------
+
+@router.post("/image/upload")
+async def upload_image(image: UploadFile = File(...)):
+    """Store an uploaded body image and return its token. Called by the editor
+    via AJAX when a file is chosen, so the main save form stays text-only.
+    (Not PIN-gated: an orphan image is harmless; the sheet save that references
+    it is PIN-gated.)"""
+    data = await image.read()
+    if not data:
+        raise HTTPException(400, "Empty file.")
+    token = images.save(data)
+    return {"token": token, "url": f"/image/{token}"}
+
+
+@router.get("/image/{token}")
+def serve_image(token: str):
+    path = images.path_for(token)
+    if path is None:
+        raise HTTPException(404)
+    return FileResponse(path)
+
+
 @router.get("/sheet/{slug}/pdf")
 async def sheet_pdf(slug: str, template: str | None = None):
     if not content.exists(slug):
@@ -189,9 +230,20 @@ def _build_html(slug: str, template: str | None = None) -> str:
         raise HTTPException(404)
     settings = get_settings()
     repo_url = settings.repo_url
+    rows = []
+    for r in sheet.rows:
+        rows.append({
+            "left_html": pdf.render_markdown(r.left),
+            "kind": r.kind,
+            "image_data": images.data_uri(r.value) if r.kind == "image" else None,
+            "qr_data": qr.url_qr(r.value) if r.kind == "qr" and r.value else None,
+            "url": r.value if r.kind == "qr" else "",
+        })
     ctx = {
         "sheet": sheet,
-        "body_html": pdf.render_markdown(sheet.body),
+        "rows": rows,
+        # Legacy: joined left columns, for older custom templates using body_html.
+        "body_html": "\n".join(row["left_html"] for row in rows),
         "log_qr": qr.log_qr(slug),
         "edit_qr": qr.edit_qr(slug),
         "logo_data": branding.logo_data_uri(),

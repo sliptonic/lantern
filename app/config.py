@@ -52,6 +52,11 @@ class Settings:
         return self.data_dir / "templates"
 
     @property
+    def images_dir(self) -> Path:
+        """Flat pool of images embedded in sheet bodies."""
+        return self.data_dir / "images"
+
+    @property
     def db_path(self) -> Path:
         """SQLite file: usage log + print-queue state."""
         return self.data_dir / "lantern.db"

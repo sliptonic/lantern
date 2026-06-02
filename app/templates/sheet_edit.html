@@ -1,12 +1,36 @@
 {% extends "base.html" %}
 {% block title %}{{ "New sheet" if is_new else "Edit " + slug }} — Lantern{% endblock %}
-{% block head %}<script src="/static/preview.js"></script>{% endblock %}
+{% block head %}
+<script src="/static/preview.js"></script>
+<script src="/static/editor.js"></script>
+{% endblock %}
+
+{# One body-grid editor row. Reused for server-rendered rows and the JS template. #}
+{% macro body_row(row) %}
+<div class="body-row">
+  <textarea name="row_left" rows="5" placeholder="Markdown for the left column…">{{ row.left }}</textarea>
+  <div class="brow-right">
+    <select name="row_kind" class="row-kind">
+      <option value="none" {{ "selected" if row.kind == "none" }}>None</option>
+      <option value="image" {{ "selected" if row.kind == "image" }}>Image</option>
+      <option value="qr" {{ "selected" if row.kind == "qr" }}>QR (URL)</option>
+    </select>
+    <input type="text" name="row_value" class="row-value" value="{{ row.value }}">
+    <span class="row-image-ctl" hidden>
+      <input type="file" accept="image/*" class="row-image-file">
+      <img class="row-image-thumb" alt="" hidden>
+    </span>
+    <button type="button" class="remove-row" title="Remove row">×</button>
+  </div>
+</div>
+{% endmacro %}
+
 {% block content %}
 <h1>{{ "New Info-Sheet" if is_new else "Edit: " + (sheet.machine or slug) }}</h1>
 
 {% if overflowing %}
 <div class="overflow-banner">⚠️ This sheet is <strong>too long to fit one page</strong>, so it's held
-  out of the print queue. Trim the procedure until the preview fits, then save again.</div>
+  out of the print queue. Trim the body until the preview fits, then save again.</div>
 {% endif %}
 
 {% if is_new and samples %}
@@ -59,9 +83,16 @@
       </fieldset>
       {% endfor %}
 
-      <label>Procedure / checklist (Markdown)
-        <textarea name="body" rows="16" id="body">{{ sheet.body }}</textarea>
-      </label>
+      <fieldset class="body-section">
+        <legend>Body — two-column grid</legend>
+        <p class="muted">Each row: <strong>left</strong> is Markdown; <strong>right</strong> is nothing,
+          an uploaded image, or a URL shown as a QR code (e.g. a how-to video).</p>
+        <div id="body-grid">
+          {% set rows = sheet.rows if sheet.rows else [{"left": "", "kind": "none", "value": ""}] %}
+          {% for row in rows %}{{ body_row(row) }}{% endfor %}
+        </div>
+        <button type="button" id="add-row" class="add-body-row">+ add row</button>
+      </fieldset>
     </div>
 
     <div class="preview-pane">
@@ -84,13 +115,14 @@
   </div>
 </form>
 
+<template id="row-tpl">{{ body_row({"left": "", "kind": "none", "value": ""}) }}</template>
+
 <script>
   // "+ add link" clones the last row in its group and clears it.
   document.querySelectorAll(".add-row").forEach(function (btn) {
     btn.addEventListener("click", function () {
       var rows = btn.previousElementSibling;          // .link-rows
-      var last = rows.lastElementChild;
-      var copy = last.cloneNode(true);
+      var copy = rows.lastElementChild.cloneNode(true);
       copy.querySelectorAll("input").forEach(function (i) { i.value = ""; });
       rows.appendChild(copy);
     });

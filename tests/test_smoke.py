@@ -53,12 +53,50 @@ def test_create_sheet_and_log_usage(client):
 
 
 def test_history_records_revisions(client):
-    client.post("/sheet/save", data={"machine": "Lathe", "author": "a", "body": "v1"})
-    client.post("/sheet/save", data={"machine": "Lathe", "slug": "lathe", "author": "b", "body": "v2"})
+    client.post("/sheet/save", data={"machine": "Lathe", "author": "a",
+                                      "row_left": ["v1"], "row_kind": ["none"], "row_value": [""]})
+    client.post("/sheet/save", data={"machine": "Lathe", "slug": "lathe", "author": "b",
+                                      "row_left": ["v2"], "row_kind": ["none"], "row_value": [""]})
     r = client.get("/sheet/lathe/history")
     assert r.status_code == 200
-    # Two saves -> two revisions.
+    # Two distinct saves -> two revisions.
     assert r.text.count("Revert to this") >= 1
+
+
+def test_body_rows_image_and_qr(client):
+    from app import content, images
+    from app.routes.sheets import _build_html
+
+    # Upload an image -> token, servable.
+    up = client.post("/image/upload", files={"image": ("d.png", _PNG_1x1, "image/png")})
+    assert up.status_code == 200
+    token = up.json()["token"]
+    assert client.get("/image/" + token).status_code == 200
+
+    # Save a sheet with a QR row and an image row.
+    client.post("/sheet/save", data={
+        "machine": "CNC", "author": "a",
+        "row_left": ["## Setup\n- step one", "See the diagram"],
+        "row_kind": ["qr", "image"],
+        "row_value": ["https://youtu.be/demo", token],
+    })
+    sheet = content.load("cnc")
+    assert len(sheet.rows) == 2
+    assert (sheet.rows[0].kind, sheet.rows[0].value) == ("qr", "https://youtu.be/demo")
+    assert (sheet.rows[1].kind, sheet.rows[1].value) == ("image", token)
+
+    html = _build_html("cnc")
+    assert "step one" in html                      # left markdown rendered
+    assert "youtu.be/demo" in html                 # QR caption
+    assert html.count('class="grid-row') >= 2      # two grid rows
+    assert images.data_uri(token) in html          # image inlined as data URI
+
+
+def test_legacy_body_migrates_to_row():
+    from app.models import Sheet
+    s = Sheet.from_frontmatter({"slug": "x", "machine": "X"}, "hello **world**")
+    assert len(s.rows) == 1
+    assert s.rows[0].left == "hello **world**" and s.rows[0].kind == "none"
 
 
 # Minimal valid 1x1 PNG.

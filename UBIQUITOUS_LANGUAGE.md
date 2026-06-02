@@ -31,8 +31,22 @@ fixed zones of the Template: Machine name, Contact, Software Links, Manual
 Links, Training Requirement. Guarantees uniform layout.
 
 **Body** *(a.k.a. **Procedure**)*
-The freeform markdown portion of a Sheet — the how-to / checklist. Authored
-in Markdown; the one part of the Sheet that is not a Structured Field.
+The main content of a Sheet — a two-column grid of **Body Rows**. Not a
+Structured Field.
+
+**Body Row**
+One row of the Body grid: a **left** side of freeform Markdown and a **right**
+side that is one of nothing, an **Image**, or a **QR Row** (a URL rendered as a
+QR code, e.g. a how-to video). Authors add/remove rows in the Editor.
+
+**Image**
+A picture embedded in a Body Row's right side. Uploaded by the author and kept
+in a flat pool in the data volume (referenced by a token); inlined into the
+rendered PDF. Not git-versioned (unlike the Markdown).
+
+**QR Row**
+A Body Row whose right side is a URL rendered as a QR code on the Sheet — used
+to link out to videos or other resources by phone scan.
 
 **Contact** *(the **Contact Person**)*
 The person responsible for / knowledgeable about a Machine. A Structured Field:

@@ -25,3 +25,8 @@ def edit_qr(slug: str) -> str:
     """QR that opens the Editor for a Sheet."""
     base = get_settings().base_url
     return _data_uri(f"{base}/sheet/{slug}/edit")
+
+
+def url_qr(url: str) -> str:
+    """QR for an arbitrary URL (e.g. a how-to video) in a body row."""
+    return _data_uri(url)
