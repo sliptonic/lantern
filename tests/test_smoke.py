@@ -141,7 +141,7 @@ def test_templates_list_switch_and_custom(client):
     # Default render carries the branded footer (brand mark + repo link) and QRs.
     html = _build_html("drill-press", "default")
     assert "github.com/sliptonic/lantern" in html
-    assert "Scan to LOG USE" in html and "Scan to EDIT" in html
+    assert "Log Book" in html and "Edit this Page" in html
 
     # Classic is a different, valid layout.
     assert "Drill Press" in _build_html("drill-press", "classic")
@@ -225,7 +225,7 @@ def test_editor_preview_and_overflow_banner(client):
     prev = client.post("/sheet/preview", data={
         "title": "Mill", "row_left": ["Hello"], "row_kind": ["none"], "row_value": [""]})
     assert prev.status_code == 200
-    assert "Mill" in prev.text and "Scan to EDIT" in prev.text and "Hello" in prev.text
+    assert "Mill" in prev.text and "Edit this Page" in prev.text and "Hello" in prev.text
 
     # When the server marks a sheet overflowing, the editor shows the banner.
     state.mark_saved("mill", overflowing=True)
@@ -301,6 +301,11 @@ def test_archive_hides_from_dashboard_and_queue(client):
 
 def test_usage_log_view_and_csv(client):
     client.post("/sheet/save", data={"title": "Sander", "author": "a", "body": "sand"})
+
+    # The log-entry page links out to the log book (issue: read the log).
+    form = client.get("/sheet/sander/log")
+    assert '/sheet/sander/logs"' in form.text
+
     client.post("/sheet/sander/log", data={"name": "Pat", "activity": "Sanded oak", "notes": "grit 120"})
     client.post("/sheet/sander/log", data={"name": "Lee", "activity": "Sanded pine", "notes": ""})
 
@@ -339,6 +344,31 @@ def test_default_pin_warning(tmp_path, monkeypatch):
     monkeypatch.setenv("EDIT_PIN", "s3cret")
     get_settings.cache_clear()
     assert pin_is_default() is False
+
+
+def test_wrong_pin_renders_friendly_html(tmp_path, monkeypatch):
+    monkeypatch.setenv("DATA_DIR", str(tmp_path))
+    monkeypatch.setenv("BASE_URL", "http://test.local")
+    monkeypatch.setenv("SEED_SAMPLES", "0")
+    monkeypatch.setenv("PIN_ENABLED", "1")
+    monkeypatch.setenv("EDIT_PIN", "s3cret")
+    from app.config import get_settings
+    get_settings.cache_clear()
+    from app.main import app
+    with TestClient(app) as c:
+        # A browser (Accept: text/html) gets a friendly page, not raw JSON.
+        r = c.post("/sheet/save", data={"title": "X", "pin": "wrong"},
+                   headers={"accept": "text/html"})
+        assert r.status_code == 403
+        assert "Incorrect PIN" in r.text and "{" not in r.text[:1]  # HTML, not JSON
+        # Non-HTML clients still get JSON.
+        rj = c.post("/sheet/save", data={"title": "X", "pin": "wrong"},
+                    headers={"accept": "application/json"})
+        assert rj.status_code == 403 and rj.json()["detail"] == "Incorrect PIN."
+        # The correct PIN goes through.
+        ok = c.post("/sheet/save", data={"title": "X", "pin": "s3cret"},
+                    follow_redirects=False)
+        assert ok.status_code == 303
 
 
 def test_seed_creates_samples(tmp_path, monkeypatch):

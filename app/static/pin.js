@@ -23,4 +23,15 @@
     form.dataset.pinDone = "1";
     form.submit();
   });
+
+  // After a wrong PIN, the user hits Back to the form. If it's restored from
+  // the bfcache it still carries the rejected PIN + the "done" flag, so a
+  // re-submit would silently reuse the bad PIN. Clear that on every show so
+  // the next submit re-prompts.
+  window.addEventListener("pageshow", function () {
+    document.querySelectorAll("form.pin-form").forEach(function (form) {
+      delete form.dataset.pinDone;
+      form.querySelectorAll('input[type="hidden"][name="pin"]').forEach(function (i) { i.remove(); });
+    });
+  });
 })();

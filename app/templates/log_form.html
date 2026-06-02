@@ -5,7 +5,8 @@
 
 {% if done %}
   <p class="ok-msg">✅ Logged. Thanks!</p>
-  <p><a href="/sheet/{{ slug }}/log">Log another entry</a></p>
+  <p><a href="/sheet/{{ slug }}/log">Log another entry</a>
+     · <a href="/sheet/{{ slug }}/logs">Read the log book</a></p>
 {% else %}
 <form method="post" action="/sheet/{{ slug }}/log" class="log">
   <label>Your name <input name="name" required autofocus></label>
@@ -14,5 +15,6 @@
   <button type="submit">Submit</button>
 </form>
 <p class="muted">No account needed — just tell us who you are and what you did.</p>
+<p><a href="/sheet/{{ slug }}/logs">Read the log book</a></p>
 {% endif %}
 {% endblock %}
