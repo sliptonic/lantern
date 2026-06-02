@@ -108,3 +108,5 @@ section { margin-bottom: 2rem; }
 .warn-bar { background:#fff3cd; color:#8a6d00; border-bottom:1px solid #f0d98c;
             padding:.5rem 1.25rem; font-size:.9rem; text-align:center; }
 .warn-bar code { background:#0001; padding:0 .25rem; border-radius:3px; }
+.error-page { max-width:32rem; }
+.error-actions { display:flex; gap:1rem; align-items:center; margin-top:1rem; }
