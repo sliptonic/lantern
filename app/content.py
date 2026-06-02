@@ -106,7 +106,8 @@ def save(sheet: Sheet, author: str, message: str | None = None) -> str:
     """Persist a Sheet and commit it. Returns the new commit sha (Revision)."""
     repo = _repo()
     path = _path_for(sheet.slug)
-    post = frontmatter.Post(sheet.body, **sheet.frontmatter())
+    # Body rows live in the frontmatter; the file body itself stays empty.
+    post = frontmatter.Post("", **sheet.frontmatter())
     path.write_bytes(frontmatter.dumps(post).encode("utf-8"))
 
     rel = _relpath(sheet.slug)

@@ -40,12 +40,19 @@
   .resources .label:first-child { margin-left: 0; }
   .resources a { color: #111; text-decoration: none; }
 
-  /* --- Body: the freeform procedure, given maximum room --- */
+  /* --- Body: a two-column grid (left markdown | right image/QR) --- */
   .body { flex: 1; font-size: 11pt; line-height: 1.38; overflow: hidden; padding-top: 0.14in; }
   .body h1 { font-size: 16pt; margin: .2em 0 .3em; }
   .body h2 { font-size: 13pt; border-bottom: 1px solid #ccc; padding-bottom: 2px; margin: .6em 0 .3em; }
   .body ul, .body ol { margin: .2em 0 .6em 1.2em; }
   .body li { margin: .12em 0; }
+  .grid-row { display: grid; grid-template-columns: 1fr 2.1in; gap: 0.22in;
+              align-items: start; margin-bottom: 0.1in; }
+  .grid-row.full { grid-template-columns: 1fr; }
+  .row-left > :first-child { margin-top: 0; }
+  .row-right img { max-width: 2.1in; max-height: 2.4in; display: block; margin-left: auto; }
+  .row-right.qr-cell { text-align: center; font-size: 7pt; word-break: break-all; }
+  .row-right.qr-cell img { width: 1.5in; height: 1.5in; margin: 0 auto 2px; }
 
   /* --- Branded footer: QR | brand + repo | QR --- */
   footer.sheet-foot {
@@ -90,7 +97,16 @@
   {% endif %}
 
   <div class="body">
-    {{ body_html | safe }}
+    {% for row in rows %}
+    <div class="grid-row {{ 'full' if not row.image_data and not row.qr_data }}">
+      <div class="row-left">{{ row.left_html | safe }}</div>
+      {% if row.image_data %}
+      <div class="row-right"><img src="{{ row.image_data }}" alt=""></div>
+      {% elif row.qr_data %}
+      <div class="row-right qr-cell"><img src="{{ row.qr_data }}" alt=""><div>{{ row.url }}</div></div>
+      {% endif %}
+    </div>
+    {% endfor %}
   </div>
 
   <footer class="sheet-foot">

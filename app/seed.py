@@ -7,7 +7,7 @@ logging, and printing work. Seeding is skipped once any sheet exists.
 from __future__ import annotations
 
 from . import content, state
-from .models import Contact, Link, Sheet
+from .models import BodyRow, Contact, Link, Sheet
 
 SAMPLES = [
     Sheet(
@@ -17,7 +17,8 @@ SAMPLES = [
         training_required="Intro to FDM printing (30 min) + badge sign-off",
         software_links=[Link(label="PrusaSlicer", url="https://www.prusa3d.com/prusaslicer/")],
         manual_links=[Link(label="MK4 Handbook (PDF)", url="https://help.prusa3d.com/")],
-        body="""## Before you start
+        rows=[
+            BodyRow(left="""## Before you start
 - Check the **build plate is clean** — wipe with IPA if greasy.
 - Confirm the spool has enough filament for your print.
 
@@ -32,8 +33,13 @@ SAMPLES = [
 - Leave the plate clean and the area tidy.
 - **Scan the LOG QR** to record your session.
 
-> ⚠️ Never leave a print running overnight unattended.
-""",
+> ⚠️ Never leave a print running overnight unattended."""),
+            BodyRow(
+                left="### Watch first\nScan for the 2-minute first-print walkthrough video.",
+                kind="qr",
+                value="https://www.youtube.com/watch?v=primer",
+            ),
+        ],
     ),
     Sheet(
         slug="epilog-laser-cutter",
@@ -42,7 +48,8 @@ SAMPLES = [
         training_required="Laser safety course + supervised first cut. NO untrained use.",
         software_links=[Link(label="Inkscape", url="https://inkscape.org/")],
         manual_links=[Link(label="Epilog Manual", url="https://www.epiloglaser.com/")],
-        body="""## Safety first
+        rows=[
+            BodyRow(left="""## Safety first
 - **Know your material.** Only cut approved materials (see the posted list).
   **Never** cut PVC/vinyl — it releases chlorine gas.
 - Confirm the **exhaust fan is ON** before lasing.
@@ -57,8 +64,13 @@ SAMPLES = [
 ## After
 - Let the exhaust run ~30s, then remove your parts.
 - Empty small offcuts; wipe the bed.
-- **Scan the LOG QR** to record your session.
-""",
+- **Scan the LOG QR** to record your session."""),
+            BodyRow(
+                left="### Material settings\nScan for the cut/engrave settings guide.",
+                kind="qr",
+                value="https://www.youtube.com/watch?v=laser",
+            ),
+        ],
     ),
 ]
 
