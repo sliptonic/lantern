@@ -90,7 +90,7 @@ All settings are environment variables (see `.env.example`):
 
 | Variable | Default | What it does |
 |---|---|---|
-| `BASE_URL` | `http://localhost:8080` | The address baked into every QR code. **Set this to a LAN IP/hostname** so phones can reach it. |
+| `BASE_URL` | `http://localhost:8080` | The address baked into every QR code. **Set this to a LAN IP/hostname** so phones can reach it. Also editable at runtime in Settings. |
 | `EDIT_PIN` | `changeme` | The shared PIN required to edit or create sheets. **Change this.** |
 | `PIN_ENABLED` | `1` | Set to `0` to drop the PIN gate entirely (fully open). |
 | `PAGE_SIZE` | `letter` | Page size: `letter` (US) or `a4`. Also switchable in Settings. |

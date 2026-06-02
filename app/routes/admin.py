@@ -6,7 +6,7 @@ from __future__ import annotations
 from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 
-from .. import content, pagesize, sheet_templates
+from .. import baseurl, content, pagesize, sheet_templates, state
 from ..config import get_settings
 from ..security import require_pin
 from ..templating import base_context, render
@@ -42,9 +42,11 @@ async def save_settings(
     pin: str = Form(""),
     active_template: str = Form(""),
     page_size: str = Form(""),
+    base_url: str = Form(""),
     logo: UploadFile | None = File(None),
 ):
-    """Unified settings save: optional logo upload + active template + page size."""
+    """Unified settings save: optional logo upload + active template + page size
+    + base URL."""
     require_pin(pin)
     settings = get_settings()
     if logo is not None and logo.filename:
@@ -56,6 +58,12 @@ async def save_settings(
         sheet_templates.set_active(active_template)
     if page_size:
         pagesize.set(page_size)
+    # Base URL is baked into every QR code. If it changes, the posted sheets'
+    # codes are now wrong, so flag every sheet for reprinting.
+    old_base = baseurl.get()
+    baseurl.set(base_url)
+    if baseurl.get() != old_base:
+        state.mark_dirty(content.list_slugs())
     return RedirectResponse("/settings", status_code=303)
 
 

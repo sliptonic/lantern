@@ -76,6 +76,21 @@ def mark_printed(slug: str, commit: str) -> None:
         )
 
 
+def mark_dirty(slugs) -> None:
+    """Flag the given sheets as needing a reprint — used when something global
+    (e.g. the Base URL baked into every QR code) changes, invalidating the
+    posted copies. Creates a state row if missing; Overflowing sheets stay out
+    of the Queue."""
+    with connect() as conn:
+        for slug in slugs:
+            _ensure_row(conn, slug)
+            conn.execute(
+                "UPDATE sheet_state SET dirty = 1, updated_at = datetime('now') "
+                "WHERE slug = ? AND overflowing = 0",
+                (slug,),
+            )
+
+
 def get_state(slug: str) -> dict:
     with connect() as conn:
         row = conn.execute("SELECT * FROM sheet_state WHERE slug = ?", (slug,)).fetchone()

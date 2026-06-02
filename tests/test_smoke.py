@@ -237,8 +237,15 @@ def test_editor_preview_and_overflow_banner(client):
 
     client.post("/sheet/save", data={"title": "Mill", "author": "a", "body": "x"})
     page = client.get("/sheet/mill/edit").text
-    assert "/static/preview.js" in page          # live preview wired in
-    assert 'class="page-preview"' in page         # the page-ratio preview box
+    assert "/static/editor.js" in page            # live preview wired in
+    assert 'id="preview-frame"' in page           # the print-template preview iframe
+
+    # The preview endpoint renders the real print template against unsaved form
+    # data, so the editor iframe matches the printed PDF exactly (issue #14).
+    prev = client.post("/sheet/preview", data={
+        "title": "Mill", "row_left": ["Hello"], "row_kind": ["none"], "row_value": [""]})
+    assert prev.status_code == 200
+    assert "Mill" in prev.text and "Scan to EDIT" in prev.text and "Hello" in prev.text
 
     # When the server marks a sheet overflowing, the editor shows the banner.
     state.mark_saved("mill", overflowing=True)
@@ -259,6 +266,36 @@ def test_batch_print_queue(client):
 
     # With an empty queue, the combined PDF is a 404 (nothing to print).
     assert client.get("/queue/print-all.pdf").status_code == 404
+
+
+def test_base_url_runtime_override(client):
+    from app import baseurl, state
+
+    # With no override stored, the active base URL is the BASE_URL env value.
+    assert baseurl.get() == "http://test.local"
+
+    client.post("/sheet/save", data={"title": "Drill Press", "author": "a", "body": "x"})
+    # Pretend it was already printed, so it starts out of the queue.
+    state.mark_printed("drill-press", "deadbeef")
+    assert "drill-press" not in state.print_queue()
+
+    # Change the base URL at runtime via Settings (PIN disabled in this fixture).
+    r = client.post("/settings", data={"base_url": "http://192.168.1.50:9000"},
+                    follow_redirects=False)
+    assert r.status_code == 303
+    # The override wins over the env value, app-wide.
+    assert baseurl.get() == "http://192.168.1.50:9000"
+    assert client.get("/healthz").json()["base_url"] == "http://192.168.1.50:9000"
+    # A trailing slash is normalized away (QR targets append their own path).
+    client.post("/settings", data={"base_url": "http://192.168.1.50:9000/"},
+                follow_redirects=False)
+    assert baseurl.get() == "http://192.168.1.50:9000"
+    # The change invalidated the posted QR code, so the sheet is re-queued.
+    assert "drill-press" in state.print_queue()
+
+    # Blanking the field clears the override and reverts to the env default.
+    client.post("/settings", data={"base_url": ""}, follow_redirects=False)
+    assert baseurl.get() == "http://test.local"
 
 
 def test_archive_hides_from_dashboard_and_queue(client):

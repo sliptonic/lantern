@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import segno
 
-from .config import get_settings
+from . import baseurl
 
 
 def _data_uri(target: str) -> str:
@@ -17,13 +17,13 @@ def _data_uri(target: str) -> str:
 
 def log_qr(slug: str) -> str:
     """QR that opens the usage-log form for a Sheet."""
-    base = get_settings().base_url
+    base = baseurl.get()
     return _data_uri(f"{base}/sheet/{slug}/log")
 
 
 def edit_qr(slug: str) -> str:
     """QR that opens the Editor for a Sheet."""
-    base = get_settings().base_url
+    base = baseurl.get()
     return _data_uri(f"{base}/sheet/{slug}/edit")
 
 

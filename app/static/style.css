@@ -40,7 +40,16 @@ form.inline input { width:auto; }
 button { background:var(--accent); color:#fff; border:0; padding:.45rem .9rem; border-radius:.3rem; font:inherit; cursor:pointer; }
 button:hover { filter:brightness(1.08); }
 
-.editor .grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+/* Editing controls take the room; the preview is just a small layout sketch.
+   minmax(0,…) lets the columns shrink below the iframe's intrinsic 816px width
+   — without it the preview blows out the grid and the page's right edge (the
+   footer QR) gets clipped (issue #14). */
+.editor .grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,260px);
+                gap:1.5rem; align-items:start; }
+@media (max-width:760px) {
+  .editor .grid { grid-template-columns:1fr; }
+  .preview-pane { position:static; }
+}
 .save-row { display:flex; gap:1rem; align-items:flex-end; margin-top:1rem; flex-wrap:wrap; }
 .save-row label { margin:0; }
 .log { max-width: 32rem; }
@@ -48,15 +57,14 @@ button:hover { filter:brightness(1.08); }
 /* --- Editor live preview (issue #4) --- */
 .preview-pane { position:sticky; top:1rem; }
 .preview-cap { margin:.2rem 0 .4rem; }
-.page-preview { aspect-ratio:8.5/11; background:#fff; border:1px solid #bbb; box-shadow:0 1px 4px #0001;
-                display:flex; flex-direction:column; padding:4% 5%; overflow:hidden; font-size:9px; line-height:1.35; }
-.page-preview.overflowing { border-color:#c0392b; box-shadow:0 0 0 2px #f8d4cf; }
-.pp-head { border-bottom:2px solid #111; padding-bottom:.3em; font-weight:700; font-size:14px; }
-.pp-body { flex:1; overflow:hidden; padding-top:.4em; }
-.pp-body h1 { font-size:12px; margin:.3em 0; } .pp-body h2 { font-size:11px; border-bottom:1px solid #ccc; margin:.4em 0 .2em; }
-.pp-body ul, .pp-body ol { margin:.2em 0 .4em 1.1em; } .pp-body p { margin:.3em 0; }
-.pp-body blockquote { border-left:2px solid #ccc; margin:.3em 0; padding-left:.5em; color:#555; }
-.pp-foot { border-top:2px solid #111; padding-top:.3em; text-align:center; color:#666; font-size:7px; letter-spacing:.05em; }
+/* The preview is the real print template in an iframe, rendered at true page
+   size and scaled to fit by JS (transform), so the overflow check reflects the
+   printed page, not the device viewport (issue #14). .pp-scale clips the
+   overflow and JS sets its height to the scaled page height. */
+.pp-scale { overflow:hidden; max-width:260px; }
+.page-preview { display:block; border:0; transform-origin:top left;
+                background:#fff; box-shadow:0 1px 4px #0001; }
+.page-preview.overflowing { box-shadow:0 0 0 2px #f8d4cf; }
 .overflow-warn { display:none; background:#fbe3e4; color:#a11; border:1px solid #e9b3b3;
                  padding:.3rem .5rem; border-radius:.3rem; font-size:.85rem; font-weight:600; margin-bottom:.3rem; }
 .overflow-banner { background:#fbe3e4; color:#a11; border:1px solid #e9b3b3; border-radius:.4rem;
@@ -89,11 +97,6 @@ section { margin-bottom: 2rem; }
 .row-image-thumb { height:2.4rem; border:1px solid var(--line); border-radius:.2rem; background:#fff; }
 .remove-row { background:none; color:#a11; border:1px solid #e9b3b3; padding:.1rem .55rem; line-height:1; }
 .add-body-row { background:none; color:var(--accent); border:1px dashed var(--accent); padding:.2rem .6rem; font-size:.85rem; }
-/* Preview grid rows */
-.pp-row { display:grid; grid-template-columns:1fr 38%; gap:6px; margin-bottom:5px; align-items:start; }
-.pp-row.full { grid-template-columns:1fr; }
-.pp-right img { max-width:100%; max-height:64px; display:block; margin-left:auto; }
-.pp-qr { font-size:7px; color:#555; border:1px dashed #bbb; padding:3px; text-align:center; word-break:break-all; }
 
 .start-from { display:flex; align-items:center; gap:.4rem; flex-wrap:wrap; margin:.4rem 0 1rem; }
 .start-from .label { text-transform:uppercase; letter-spacing:.04em; color:var(--muted); font-size:.7rem; }

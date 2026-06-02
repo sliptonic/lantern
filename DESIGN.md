@@ -74,7 +74,7 @@ migrated on load (see `models.Sheet.from_frontmatter`).
 
 - `usage_log(id, slug, name, activity, notes, created_at)`
 - `sheet_state(slug, dirty, overflowing, last_printed_commit, updated_at)`
-- `settings(key, value)` — active template, page size, etc.
+- `settings(key, value)` — active template, page size, base-URL override, etc.
 - `archived_sheets(slug, archived_at)`
 
 ### Other `DATA_DIR` paths
@@ -94,6 +94,7 @@ migrated on load (see `models.Sheet.from_frontmatter`).
 | `settings_store.py` | Key/value settings over the `settings` table |
 | `sheet_templates.py` | Built-in + user templates; sandboxed Jinja render of a sheet |
 | `pagesize.py` | Letter/A4 geometry + active page size |
+| `baseurl.py` | Active base URL (QR/link root): persisted override → env default |
 | `images.py` | Image pool: save, serve path, data-URI |
 | `branding.py` | Uploaded-logo + brand-mark data URIs |
 | `qr.py` | Log/Edit/arbitrary-URL QR codes (SVG data URIs) |
@@ -124,8 +125,8 @@ PIN-gated routes require the shared PIN when `PIN_ENABLED=1`.
 | GET/POST | `/queue` · `/queue/{slug}/printed` | Print queue + mark printed | — |
 | GET | `/queue/print-all.pdf` | Combined PDF of the whole queue | — |
 | POST | `/queue/printed-all` | Mark the whole queue printed | — |
-| GET | `/settings` | Settings (logo, template, page size) | — |
-| POST | `/settings` | Save logo + active template + page size | PIN |
+| GET | `/settings` | Settings (logo, template, page size, base URL) | — |
+| POST | `/settings` | Save logo + active template + page size + base URL | PIN |
 | GET | `/logo` | Serve the uploaded logo | — |
 | GET | `/settings/template/new` · `/{name}/edit` | Template editor | — |
 | POST | `/settings/template/save` · `/{name}/delete` | Save / delete a custom template | PIN |
