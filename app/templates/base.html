@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Lantern{% endblock %}</title>
   <link rel="stylesheet" href="/static/style.css">
-  <link rel="icon" type="image/png" href="/static/favicon.png">
+  <link rel="icon" type="image/svg+xml" href="/static/lantern.svg">
   <script>window.LANTERN_PIN_ENABLED = {{ pin_enabled | tojson }};</script>
   <script src="/static/pin.js"></script>
   {% block head %}{% endblock %}
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="/"><img src="/static/lantern-logo.png" alt="" class="brand-logo"> Lantern</a>
+    <a class="brand" href="/"><img src="/static/lantern.svg" alt="" class="brand-logo"> Lantern</a>
     <nav>
       <a href="/">Dashboard</a>
       <a href="/queue">Print Queue</a>
@@ -28,7 +28,7 @@
     {% block content %}{% endblock %}
   </main>
   <footer class="site-foot">
-    <img src="/static/lantern-mark.png" alt="" class="foot-mark">
+    <img src="/static/lantern.svg" alt="" class="foot-mark">
     <span>Lantern · <a href="{{ repo_url }}" target="_blank" rel="noopener">{{ repo_url_display }}</a></span>
   </footer>
 </body>

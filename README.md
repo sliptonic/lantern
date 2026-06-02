@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="branding/lantern-source-2.png" alt="Lantern" width="120">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="app/static/lantern-white.svg">
+    <img src="app/static/lantern.svg" alt="Lantern" height="120">
+  </picture>
 </p>
 
 <h1 align="center">Lantern</h1>

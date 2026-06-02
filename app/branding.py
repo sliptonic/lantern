@@ -12,9 +12,9 @@ from pathlib import Path
 
 from .config import get_settings
 
-# The Lantern project brand mark (small), shown in the printed sheet footer.
+# The Lantern project brand mark (vector), shown in the printed sheet footer.
 # Distinct from the makerspace Logo (uploaded via Settings, shown in the header).
-_BRAND_MARK = Path(__file__).parent / "static" / "lantern-mark.png"
+_BRAND_MARK = Path(__file__).parent / "static" / "lantern.svg"
 
 
 def _sniff_mime(data: bytes) -> str:
@@ -45,7 +45,7 @@ def logo_data_uri() -> str | None:
 
 @lru_cache
 def brand_mark_data_uri() -> str:
-    """Inline data URI for the Lantern brand mark used in the sheet footer."""
+    """Inline data URI for the Lantern brand mark (SVG) used in the sheet footer."""
     data = _BRAND_MARK.read_bytes()
     encoded = base64.b64encode(data).decode("ascii")
-    return f"data:image/png;base64,{encoded}"
+    return f"data:image/svg+xml;base64,{encoded}"
