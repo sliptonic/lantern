@@ -11,9 +11,15 @@ import io
 from dataclasses import dataclass
 
 from markdown_it import MarkdownIt
+from mdit_py_plugins.tasklists import tasklists_plugin
 from pypdf import PdfReader
 
-_md = MarkdownIt("commonmark", {"html": False, "linkify": True}).enable("table")
+# `tasklists_plugin` renders GitHub-style `- [ ]` / `- [x]` as checkboxes.
+_md = (
+    MarkdownIt("commonmark", {"html": False, "linkify": True})
+    .enable("table")
+    .use(tasklists_plugin)
+)
 
 
 def render_markdown(text: str) -> str:

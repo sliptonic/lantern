@@ -39,6 +39,9 @@
   .body h2 { font-size: 13pt; border-bottom: 1px solid #ccc; padding-bottom: 2px; margin: .6em 0 .3em; }
   .body ul, .body ol { margin: .2em 0 .6em 1.2em; }
   .body li { margin: .12em 0; }
+  /* Task lists: - [ ] / - [x] */
+  .body ul.contains-task-list { list-style: none; margin-left: 0; padding-left: 0; }
+  .body .task-list-item-checkbox { margin: 0 0.08in 0 0; vertical-align: middle; }
   .grid-row { display: grid; grid-template-columns: 1fr 2.1in; gap: 0.22in;
               align-items: start; margin-bottom: 0.1in; }
   .grid-row.full { grid-template-columns: 1fr; }
