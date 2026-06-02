@@ -19,7 +19,7 @@ router = APIRouter()
 @router.get("/queue", response_class=HTMLResponse)
 def queue(request: Request):
     slugs = state.print_queue()
-    rows = [{"slug": s, "machine": (content.load(s).machine if content.load(s) else s)}
+    rows = [{"slug": s, "title": (content.load(s).title if content.load(s) else s)}
             for s in slugs]
     ctx = base_context(request) | {"queue": rows}
     return render("queue.html", ctx)

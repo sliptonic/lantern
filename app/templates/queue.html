@@ -15,11 +15,11 @@
   </form>
 </div>
 <table class="sheets">
-  <thead><tr><th>Machine</th><th></th></tr></thead>
+  <thead><tr><th>Title</th><th></th></tr></thead>
   <tbody>
     {% for s in queue %}
     <tr>
-      <td><strong>{{ s.machine }}</strong> <span class="muted">{{ s.slug }}</span></td>
+      <td><strong>{{ s.title }}</strong> <span class="muted">{{ s.slug }}</span></td>
       <td class="actions">
         <a href="/sheet/{{ s.slug }}/pdf" target="_blank">Open PDF</a>
         <form method="post" action="/queue/{{ s.slug }}/printed" class="inline">

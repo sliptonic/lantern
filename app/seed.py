@@ -12,9 +12,9 @@ from .models import BodyRow, Contact, Link, Sheet
 SAMPLES = [
     Sheet(
         slug="prusa-mk4-3d-printer",
-        machine="Prusa MK4 3D Printer",
-        contact=Contact(name="Sam Rivera", info="sam@makerspace.org · Tue/Thu evenings"),
-        training_required="Intro to FDM printing (30 min) + badge sign-off",
+        title="Prusa MK4 3D Printer",
+        contact=Contact(name="Sam Rivera", info="sam@example.org · Tue/Thu evenings"),
+        requirements="Intro to FDM printing (30 min) + sign-off",
         software_links=[Link(label="PrusaSlicer", url="https://www.prusa3d.com/prusaslicer/")],
         manual_links=[Link(label="MK4 Handbook (PDF)", url="https://help.prusa3d.com/")],
         rows=[
@@ -43,9 +43,9 @@ SAMPLES = [
     ),
     Sheet(
         slug="epilog-laser-cutter",
-        machine="Epilog Laser Cutter",
-        contact=Contact(name="Dana Kim", info="dana@makerspace.org · weekends"),
-        training_required="Laser safety course + supervised first cut. NO untrained use.",
+        title="Epilog Laser Cutter",
+        contact=Contact(name="Dana Kim", info="dana@example.org · weekends"),
+        requirements="Safety course + supervised first cut. NO untrained use.",
         software_links=[Link(label="Inkscape", url="https://inkscape.org/")],
         manual_links=[Link(label="Epilog Manual", url="https://www.epiloglaser.com/")],
         rows=[

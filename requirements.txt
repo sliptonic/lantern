@@ -16,5 +16,5 @@ pypdf==5.1.0
 # QR codes
 segno==1.6.1
 
-# Space PIN hashing
+# PIN hashing
 passlib[bcrypt]==1.7.4

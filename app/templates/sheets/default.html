@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 {# Lantern built-in sheet template: "default".
-   Compact 3-zone header (logo · machine · contact/training) to maximize the
+   Compact 3-zone header (logo · title · contact/requirements) to maximize the
    body; branded footer (log QR · Lantern mark + repo link · edit QR). #}
 <head>
 <meta charset="utf-8">
@@ -17,7 +17,7 @@
     display: flex; flex-direction: column;
   }
 
-  /* --- Compact header: logo | machine name | contact/training --- */
+  /* --- Compact header: logo | title | contact/requirements --- */
   header.sheet-head {
     display: grid;
     grid-template-columns: 1.1in 1fr 2.3in;
@@ -71,7 +71,7 @@
     <div class="logo-cell">
       {% if logo_data %}<img src="{{ logo_data }}" alt="">{% endif %}
     </div>
-    <div class="title"><h1>{{ sheet.machine }}</h1></div>
+    <div class="title"><h1>{{ sheet.title }}</h1></div>
     <div class="info">
       {% if sheet.contact.name %}
       <div class="block">
@@ -79,8 +79,8 @@
         {% if sheet.contact.info %}<br>{{ sheet.contact.info }}{% endif %}
       </div>
       {% endif %}
-      {% if sheet.training_required %}
-      <div class="block"><span class="label">Training</span><br>{{ sheet.training_required }}</div>
+      {% if sheet.requirements %}
+      <div class="block"><span class="label">Requirements</span><br>{{ sheet.requirements }}</div>
       {% endif %}
     </div>
   </header>

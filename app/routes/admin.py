@@ -30,7 +30,7 @@ def settings_page(request: Request):
 
 @router.get("/logo")
 def current_logo():
-    """Serve the uploaded makerspace logo (for the Settings preview)."""
+    """Serve the uploaded logo (for the Settings preview)."""
     path = get_settings().logo_path
     if not path.exists():
         raise HTTPException(404)

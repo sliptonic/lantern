@@ -25,15 +25,15 @@ def client(tmp_path, monkeypatch):
 def test_dashboard_empty(client):
     r = client.get("/")
     assert r.status_code == 200
-    assert "Equipment Info-Sheets" in r.text
+    assert "Info-Sheets" in r.text
 
 
 def test_create_sheet_and_log_usage(client):
     # Create a Sheet (no PIN since disabled).
     r = client.post("/sheet/save", data={
-        "machine": "Laser Cutter", "author": "jane",
+        "title": "Laser Cutter", "author": "jane",
         "contact_name": "Jane", "contact_info": "jane@space.org",
-        "training_required": "Laser safety", "body": "## How to use\n1. Be careful",
+        "requirements": "Laser safety", "body": "## How to use\n1. Be careful",
     }, follow_redirects=False)
     assert r.status_code == 303
 
@@ -53,9 +53,9 @@ def test_create_sheet_and_log_usage(client):
 
 
 def test_history_records_revisions(client):
-    client.post("/sheet/save", data={"machine": "Lathe", "author": "a",
+    client.post("/sheet/save", data={"title": "Lathe", "author": "a",
                                       "row_left": ["v1"], "row_kind": ["none"], "row_value": [""]})
-    client.post("/sheet/save", data={"machine": "Lathe", "slug": "lathe", "author": "b",
+    client.post("/sheet/save", data={"title": "Lathe", "slug": "lathe", "author": "b",
                                       "row_left": ["v2"], "row_kind": ["none"], "row_value": [""]})
     r = client.get("/sheet/lathe/history")
     assert r.status_code == 200
@@ -75,7 +75,7 @@ def test_body_rows_image_and_qr(client):
 
     # Save a sheet with a QR row and an image row.
     client.post("/sheet/save", data={
-        "machine": "CNC", "author": "a",
+        "title": "CNC", "author": "a",
         "row_left": ["## Setup\n- step one", "See the diagram"],
         "row_kind": ["qr", "image"],
         "row_value": ["https://youtu.be/demo", token],
@@ -111,7 +111,7 @@ def test_logo_embedded_in_sheet_when_present(client):
     from app.config import get_settings
     from app.routes.sheets import _build_html
 
-    client.post("/sheet/save", data={"machine": "Laser Cutter", "author": "a", "body": "x"})
+    client.post("/sheet/save", data={"title": "Laser Cutter", "author": "a", "body": "x"})
 
     # No uploaded logo yet (template-agnostic: assert on the data itself).
     assert branding.logo_data_uri() is None
@@ -131,7 +131,7 @@ def test_templates_list_switch_and_custom(client):
     from app import sheet_templates
     from app.routes.sheets import _build_html
 
-    client.post("/sheet/save", data={"machine": "Drill Press", "author": "a",
+    client.post("/sheet/save", data={"title": "Drill Press", "author": "a",
                                       "body": "## Use\n- Be careful"})
 
     # Both built-ins are available; default is active.
@@ -148,7 +148,7 @@ def test_templates_list_switch_and_custom(client):
 
     # Create a custom template -> listed, renders, can be made active.
     r = client.post("/settings/template/save", data={
-        "name": "mine", "html": "<html><body>CUSTOM {{ sheet.machine }}</body></html>"})
+        "name": "mine", "html": "<html><body>CUSTOM {{ sheet.title }}</body></html>"})
     assert r.status_code in (200, 303)
     assert "mine" in sheet_templates.custom_names()
     assert "CUSTOM Drill Press" in _build_html("drill-press", "mine")
@@ -167,7 +167,7 @@ def test_software_and_manual_links(client):
     from app.routes.sheets import _build_html
 
     client.post("/sheet/save", data={
-        "machine": "CNC Router", "author": "a", "body": "mill",
+        "title": "CNC Router", "author": "a", "body": "mill",
         "sw_label": ["Fusion 360", ""], "sw_url": ["https://fusion.example", ""],
         "man_label": ["Manual"], "man_url": ["https://manual.example"],
     })
@@ -198,7 +198,7 @@ def test_unified_settings_save(client):
     from app import branding, pagesize, sheet_templates
 
     client.post("/settings/template/save",
-                data={"name": "alt", "html": "<html>{{ sheet.machine }}</html>"})
+                data={"name": "alt", "html": "<html>{{ sheet.title }}</html>"})
     # One save sets logo + active template + page size together.
     r = client.post("/settings", data={"active_template": "alt", "page_size": "a4"},
                     files={"logo": ("l.png", _PNG_1x1, "image/png")})
@@ -213,7 +213,7 @@ def test_page_size_switch(client):
     from app import pagesize
     from app.routes.sheets import _build_html
 
-    client.post("/sheet/save", data={"machine": "Bandsaw", "author": "a", "body": "cut"})
+    client.post("/sheet/save", data={"title": "Bandsaw", "author": "a", "body": "cut"})
 
     # Default is US Letter.
     assert pagesize.get() == "letter"
@@ -235,7 +235,7 @@ def test_page_size_switch(client):
 def test_editor_preview_and_overflow_banner(client):
     from app import state
 
-    client.post("/sheet/save", data={"machine": "Mill", "author": "a", "body": "x"})
+    client.post("/sheet/save", data={"title": "Mill", "author": "a", "body": "x"})
     page = client.get("/sheet/mill/edit").text
     assert "/static/preview.js" in page          # live preview wired in
     assert 'class="page-preview"' in page         # the page-ratio preview box
@@ -248,8 +248,8 @@ def test_editor_preview_and_overflow_banner(client):
 def test_batch_print_queue(client):
     from app import state
 
-    client.post("/sheet/save", data={"machine": "Drill", "author": "a", "body": "drill"})
-    client.post("/sheet/save", data={"machine": "Saw", "author": "a", "body": "saw"})
+    client.post("/sheet/save", data={"title": "Drill", "author": "a", "body": "drill"})
+    client.post("/sheet/save", data={"title": "Saw", "author": "a", "body": "saw"})
     assert set(state.print_queue()) == {"drill", "saw"}
 
     # Mark all printed clears the whole queue in one action.
@@ -264,7 +264,7 @@ def test_batch_print_queue(client):
 def test_archive_hides_from_dashboard_and_queue(client):
     from app import state
 
-    client.post("/sheet/save", data={"machine": "Welder", "author": "a", "body": "weld"})
+    client.post("/sheet/save", data={"title": "Welder", "author": "a", "body": "weld"})
     assert "Welder" in client.get("/").text
     assert "welder" in client.get("/queue").text
 
@@ -273,7 +273,7 @@ def test_archive_hides_from_dashboard_and_queue(client):
     assert r.status_code == 303
     assert state.is_archived("welder")
     assert "welder" not in client.get("/queue").text
-    assert "Archived machines" in client.get("/").text
+    assert "Archived sheets" in client.get("/").text
     assert client.get("/sheet/welder/history").status_code == 200
 
     # Unarchive -> back in the queue.
@@ -283,7 +283,7 @@ def test_archive_hides_from_dashboard_and_queue(client):
 
 
 def test_usage_log_view_and_csv(client):
-    client.post("/sheet/save", data={"machine": "Sander", "author": "a", "body": "sand"})
+    client.post("/sheet/save", data={"title": "Sander", "author": "a", "body": "sand"})
     client.post("/sheet/sander/log", data={"name": "Pat", "activity": "Sanded oak", "notes": "grit 120"})
     client.post("/sheet/sander/log", data={"name": "Lee", "activity": "Sanded pine", "notes": ""})
 

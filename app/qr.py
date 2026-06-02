@@ -1,7 +1,7 @@
 """QR code generation for the Log QR and Edit QR.
 
 Both encode `${BASE_URL}/sheet/<slug>/...` so they resolve from any phone on
-the makerspace LAN. Returned as inline SVG data URIs for easy template/PDF use.
+the local network. Returned as inline SVG data URIs for easy template/PDF use.
 """
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ def _data_uri(target: str) -> str:
 
 
 def log_qr(slug: str) -> str:
-    """QR that opens the Usage Log form for a Machine."""
+    """QR that opens the usage-log form for a Sheet."""
     base = get_settings().base_url
     return _data_uri(f"{base}/sheet/{slug}/log")
 

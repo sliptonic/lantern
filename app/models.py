@@ -1,4 +1,4 @@
-"""Domain models. Names follow UBIQUITOUS_LANGUAGE.md."""
+"""Domain models for Info-Sheets. Terms follow UBIQUITOUS_LANGUAGE.md."""
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -18,9 +18,9 @@ class Link:
 
 @dataclass
 class Contact:
-    """The Contact Person for a Machine."""
+    """The person responsible for the subject of a sheet."""
     name: str = ""
-    info: str = ""  # free text: email, phone, shop hours
+    info: str = ""  # free text: email, phone, hours
 
 
 @dataclass
@@ -48,29 +48,29 @@ class BodyRow:
 
 @dataclass
 class Sheet:
-    """An Info-Sheet: the single-page document for one Machine.
+    """An Info-Sheet: the single-page document for one posted procedure.
 
-    Structured Fields live as frontmatter; the Procedure is a grid of body
-    `rows` (left Markdown + an optional image or QR on the right). Persisted as
+    Structured fields live as frontmatter; the body is a grid of `rows`
+    (left Markdown + an optional image or QR on the right). Persisted as
     `content/sheets/<slug>.md` and versioned in git.
     """
     slug: str
-    machine: str
+    title: str
     contact: Contact = field(default_factory=Contact)
     software_links: list[Link] = field(default_factory=list)
     manual_links: list[Link] = field(default_factory=list)
-    training_required: str = ""
+    requirements: str = ""
     rows: list[BodyRow] = field(default_factory=list)
 
     # --- serialization to/from frontmatter dict ---
     def frontmatter(self) -> dict:
         return {
             "slug": self.slug,
-            "machine": self.machine,
+            "title": self.title,
             "contact": {"name": self.contact.name, "info": self.contact.info},
             "software_links": [{"label": lk.label, "url": lk.url} for lk in self.software_links],
             "manual_links": [{"label": lk.label, "url": lk.url} for lk in self.manual_links],
-            "training_required": self.training_required,
+            "requirements": self.requirements,
             "rows": [r.as_dict() for r in self.rows],
         }
 
@@ -86,10 +86,11 @@ class Sheet:
             rows = []
         return cls(
             slug=meta["slug"],
-            machine=meta.get("machine", meta["slug"]),
+            # `machine` and `training_required` are the legacy field names.
+            title=meta.get("title") or meta.get("machine") or meta["slug"],
             contact=Contact(name=contact.get("name", ""), info=contact.get("info", "")),
             software_links=[Link(**lk) for lk in (meta.get("software_links") or [])],
             manual_links=[Link(**lk) for lk in (meta.get("manual_links") or [])],
-            training_required=meta.get("training_required", ""),
+            requirements=meta.get("requirements") or meta.get("training_required", ""),
             rows=rows,
         )

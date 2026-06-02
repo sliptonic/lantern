@@ -1,19 +1,19 @@
 {% extends "base.html" %}
 {% block title %}Dashboard — Lantern{% endblock %}
 {% block content %}
-<h1>Equipment Info-Sheets</h1>
+<h1>Info-Sheets</h1>
 
 {% if not sheets %}
   <p class="muted">No sheets yet. <a href="/new">Create the first one.</a></p>
 {% else %}
 <table class="sheets">
   <thead>
-    <tr><th>Machine</th><th>Status</th><th>Revisions</th><th>Last logged</th><th></th></tr>
+    <tr><th>Title</th><th>Status</th><th>Revisions</th><th>Last logged</th><th></th></tr>
   </thead>
   <tbody>
     {% for s in sheets %}
     <tr>
-      <td><strong>{{ s.machine or s.slug }}</strong><br><span class="muted">{{ s.slug }}</span></td>
+      <td><strong>{{ s.title or s.slug }}</strong><br><span class="muted">{{ s.slug }}</span></td>
       <td>
         {% if s.overflowing %}<span class="badge over">Overflowing</span>
         {% elif s.dirty %}<span class="badge dirty">Needs printing</span>
@@ -27,7 +27,7 @@
         <a href="/sheet/{{ s.slug }}/logs">Log</a>
         <a href="/sheet/{{ s.slug }}/history">History</a>
         <form method="post" action="/sheet/{{ s.slug }}/archive" class="inline pin-form"
-              onsubmit="return confirm('Retire {{ s.machine or s.slug }}? It will be hidden from the dashboard and queue (history kept).')">
+              onsubmit="return confirm('Retire {{ s.title or s.slug }}? It will be hidden from the dashboard and queue (history kept).')">
           <button type="submit">Archive</button>
         </form>
       </td>
@@ -39,12 +39,12 @@
 
 {% if archived %}
 <details class="archived">
-  <summary>Archived machines ({{ archived|length }})</summary>
+  <summary>Archived sheets ({{ archived|length }})</summary>
   <table class="sheets">
     <tbody>
       {% for s in archived %}
       <tr>
-        <td><strong>{{ s.machine or s.slug }}</strong> <span class="muted">{{ s.slug }}</span></td>
+        <td><strong>{{ s.title or s.slug }}</strong> <span class="muted">{{ s.slug }}</span></td>
         <td class="actions">
           <a href="/sheet/{{ s.slug }}/pdf">PDF</a>
           <a href="/sheet/{{ s.slug }}/history">History</a>

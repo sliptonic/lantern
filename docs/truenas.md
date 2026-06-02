@@ -51,7 +51,7 @@ Everything lives under the dataset you mounted at `/data`:
 ├── content/      # sheets as markdown — a full git repo (history + revert)
 ├── templates/    # your custom sheet templates
 ├── lantern.db    # usage log + print-queue state
-└── logo.png      # uploaded makerspace logo
+└── logo.png      # uploaded logo
 ```
 
 Add a **Periodic Snapshot Task** (and optionally **Replication**) on the
