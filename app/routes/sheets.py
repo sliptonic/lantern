@@ -132,7 +132,9 @@ async def save_sheet(
     row_value: list[str] = Form(default=[]),
 ):
     require_pin(pin)
-    slug = slug.strip() or content.slugify(title)
+    # An existing slug (editing) updates in place; a new sheet gets a fresh,
+    # collision-free slug so starting from a sample never overwrites it.
+    slug = slug.strip() or content.unique_slug(title)
     sheet = Sheet(
         slug=slug,
         title=title.strip(),

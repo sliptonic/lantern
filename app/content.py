@@ -25,6 +25,22 @@ def slugify(text: str) -> str:
     return slug or "sheet"
 
 
+def unique_slug(text: str) -> str:
+    """A slug for a *new* sheet that won't collide with an existing one.
+
+    Starting a new sheet from a sample (or any same-titled sheet) would
+    otherwise derive the same slug and silently overwrite the original on save.
+    Append -2, -3, … until the slug is free.
+    """
+    base = slugify(text)
+    if not exists(base):
+        return base
+    n = 2
+    while exists(f"{base}-{n}"):
+        n += 1
+    return f"{base}-{n}"
+
+
 @dataclass
 class Revision:
     """One saved Version of a Sheet, backed by a git Commit."""
