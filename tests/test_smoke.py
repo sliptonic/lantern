@@ -162,26 +162,6 @@ def test_templates_list_switch_and_custom(client):
     assert sheet_templates.get_active() == "default"
 
 
-def test_software_and_manual_links(client):
-    from app import content
-    from app.routes.sheets import _build_html
-
-    client.post("/sheet/save", data={
-        "title": "CNC Router", "author": "a", "body": "mill",
-        "sw_label": ["Fusion 360", ""], "sw_url": ["https://fusion.example", ""],
-        "man_label": ["Manual"], "man_url": ["https://manual.example"],
-    })
-
-    sheet = content.load("cnc-router")
-    # The blank software row is dropped; the filled rows persist to frontmatter.
-    assert [(lk.label, lk.url) for lk in sheet.software_links] == [("Fusion 360", "https://fusion.example")]
-    assert [(lk.label, lk.url) for lk in sheet.manual_links] == [("Manual", "https://manual.example")]
-
-    # And they render on the sheet.
-    html = _build_html("cnc-router")
-    assert "fusion.example" in html and "manual.example" in html
-
-
 def test_new_sheet_from_sample(client):
     # The chooser offers the built-in samples on the New Sheet page.
     page = client.get("/new").text

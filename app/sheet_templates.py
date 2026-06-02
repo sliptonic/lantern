@@ -38,7 +38,6 @@ CONTEXT_VARS = [
     ("sheet.title", "Sheet title"),
     ("sheet.contact.name / sheet.contact.info", "Contact person"),
     ("sheet.requirements", "Requirements / prerequisites text"),
-    ("sheet.software_links / sheet.manual_links", "Lists of {label, url}"),
     ("rows", "Body grid rows: each has left_html, kind, image_data, qr_data, url"),
     ("body_html", "Legacy: all rows' left columns joined (mark | safe)"),
     ("logo_data", "Uploaded logo as a data URI (or None)"),

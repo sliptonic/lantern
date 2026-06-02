@@ -94,6 +94,9 @@ section { margin-bottom: 2rem; }
 .brow-right .row-kind { width:auto; }
 .brow-right .row-value { flex:1; min-width:8rem; }
 .row-image-ctl { display:inline-flex; gap:.5rem; align-items:center; }
+/* The hidden attribute must win over the display above (author rules beat the
+   UA [hidden]{display:none}), so the file picker actually hides for none/qr. */
+.row-image-ctl[hidden] { display:none; }
 .row-image-thumb { height:2.4rem; border:1px solid var(--line); border-radius:.2rem; background:#fff; }
 .remove-row { background:none; color:#a11; border:1px solid #e9b3b3; padding:.1rem .55rem; line-height:1; }
 .add-body-row { background:none; color:var(--accent); border:1px dashed var(--accent); padding:.2rem .6rem; font-size:.85rem; }
@@ -105,8 +108,3 @@ section { margin-bottom: 2rem; }
 .warn-bar { background:#fff3cd; color:#8a6d00; border-bottom:1px solid #f0d98c;
             padding:.5rem 1.25rem; font-size:.9rem; text-align:center; }
 .warn-bar code { background:#0001; padding:0 .25rem; border-radius:3px; }
-fieldset.links { border:1px solid var(--line); border-radius:.4rem; padding:.5rem .75rem; margin:.6rem 0; }
-fieldset.links legend { font-weight:600; font-size:.85rem; padding:0 .3rem; }
-.link-row { display:flex; gap:.5rem; margin-bottom:.35rem; }
-.link-row input:first-child { flex:0 0 32%; }
-.add-row { background:none; color:var(--accent); border:1px dashed var(--accent); padding:.2rem .5rem; font-size:.8rem; }

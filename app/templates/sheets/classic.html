@@ -62,14 +62,6 @@
     {% if sheet.requirements %}
     <div><div class="label">Requirements</div>{{ sheet.requirements }}</div>
     {% endif %}
-    {% if sheet.software_links %}
-    <div><div class="label">Software</div>
-      {% for l in sheet.software_links %}<a href="{{ l.url }}">{{ l.label }}</a>{% if not loop.last %} · {% endif %}{% endfor %}</div>
-    {% endif %}
-    {% if sheet.manual_links %}
-    <div><div class="label">Manuals</div>
-      {% for l in sheet.manual_links %}<a href="{{ l.url }}">{{ l.label }}</a>{% if not loop.last %} · {% endif %}{% endfor %}</div>
-    {% endif %}
   </div>
 
   <div class="body">
