@@ -174,6 +174,31 @@ def test_new_sheet_from_sample(client):
     assert "build plate is clean" in pre
 
 
+def test_new_sheet_never_overwrites_existing(client):
+    from app import content
+
+    # An existing sheet (stands in for a seed sample or a previous document).
+    client.post("/sheet/save", data={"title": "Band Saw", "author": "a",
+                                      "row_left": ["original"], "row_kind": ["none"], "row_value": [""]})
+    assert content.exists("band-saw")
+
+    # A NEW sheet (no slug) with the same title must NOT overwrite it — it gets
+    # a fresh, collision-free slug.
+    r = client.post("/sheet/save", data={"title": "Band Saw", "author": "b",
+                                         "row_left": ["my copy"], "row_kind": ["none"], "row_value": [""]},
+                    follow_redirects=False)
+    assert r.status_code == 303 and r.headers["location"] == "/sheet/band-saw-2/edit"
+    assert content.exists("band-saw") and content.exists("band-saw-2")
+    assert content.load("band-saw").rows[0].left == "original"   # source untouched
+    assert content.load("band-saw-2").rows[0].left == "my copy"
+
+    # Editing an existing sheet (slug provided) still updates in place — no copy.
+    client.post("/sheet/save", data={"slug": "band-saw", "title": "Band Saw", "author": "c",
+                                      "row_left": ["edited"], "row_kind": ["none"], "row_value": [""]})
+    assert content.load("band-saw").rows[0].left == "edited"
+    assert not content.exists("band-saw-3")
+
+
 def test_unified_settings_save(client):
     from app import branding, pagesize, sheet_templates
 
